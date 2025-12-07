@@ -112,14 +112,15 @@ module "custom_cp_code" {
   product_id = "prd_Fresca"
 }
 
+# Reference the CP code ID in your property configuration
 module "property" {
-  source             = "./modules/property-waf"
-  contract           = data.akamai_contract.my_contract.id
-  group              = data.akamai_group.my_group.id
-  name               = "my-property"
-  product_id         = "prd_Fresca"
-  cp_code_name       = module.custom_cp_code.id
-  create_new_cp_code = true
+  source       = "./modules/property-waf"
+  contract     = data.akamai_contract.my_contract.id
+  group        = data.akamai_group.my_group.id
+  name         = "my-property"
+  product_id   = "prd_Fresca"
+  cp_code_name = module.custom_cp_code.id
+  # ... other property configuration
 }
 ```
 
@@ -269,14 +270,15 @@ module "website_cp_code" {
   product_id = "prd_Fresca"
 }
 
+# Use the CP code output in your property module
 module "website_property" {
-  source             = "./modules/property-waf"
-  contract           = data.akamai_contract.my_contract.id
-  group              = data.akamai_group.my_group.id
-  name               = "www.example.com"
-  product_id         = "prd_Fresca"
-  cp_code_name       = module.website_cp_code.id
-  create_new_cp_code = true
+  source       = "./modules/property-waf"
+  contract     = data.akamai_contract.my_contract.id
+  group        = data.akamai_group.my_group.id
+  name         = "www.example.com"
+  product_id   = "prd_Fresca"
+  cp_code_name = module.website_cp_code.id
+  # ... other property configuration
 }
 ```
 
