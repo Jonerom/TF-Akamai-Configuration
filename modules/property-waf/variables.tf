@@ -22,15 +22,9 @@ variable "name" {
   }
 }
 
-variable "cp_code_name" {
-  description = "Name of the CP Code to be associated with the Property"
+variable "cp_code_id" {
+  description = "ID of the CP Code to be associated with the Property"
   type        = string
-}
-
-variable "create_new_cp_code" {
-  description = "Flag to indicate whether to create a new CP Code for the Property"
-  type        = bool
-  default     = true
 }
 
 variable "site_shield_name" {

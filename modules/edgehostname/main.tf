@@ -12,18 +12,26 @@ locals {
   })
 }
 
+resource "random_string" "edge_hostname_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+  lower   = true
+  numeric = true
+}
+
 resource "akamai_edge_hostname" "edge-hostname" {
   product_id  = var.product_id
   contract_id = var.contract
   group_id    = var.group
   edge_hostname = (
     var.edge_hostname_type == lower("enhanced")
-    ? "${var.hostname}.edgekey.net" :
+    ? "${var.hostname}-${random_string.edge_hostname_suffix.result}.edgekey.net" :
     var.edge_hostname_type == lower("standard")
-    ? "${var.hostname}.edgesuite.net" :
+    ? "${var.hostname}-${random_string.edge_hostname_suffix.result}.edgesuite.net" :
     var.edge_hostname_type == lower("shared")
-    ? "${var.hostname}.akamaized.net" :
-    "${var.hostname}.edgesuite.net"
+    ? "${var.hostname}-${random_string.edge_hostname_suffix.result}.akamaized.net" :
+    "${var.hostname}-${random_string.edge_hostname_suffix.result}.edgesuite.net"
   )
   ip_behavior         = var.ip_behavior
   ttl                 = try(var.ttl, null)

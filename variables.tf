@@ -1,6 +1,6 @@
 variable "akamai_map" {
   description = "The complete Akamai Map configuration to configure the CDN solution for a single zone"
-  type = map(object({
+  type = object({
     akamai_group_name = string # Name of the Akamai Group assigned to the contract
     ##  DNS Configuration  ##
     # Configuration for each DNS Zone to be created
@@ -68,25 +68,32 @@ variable "akamai_map" {
     property_configuration = optional(map(object({
       property_name     = string           # Property name. Only letters, numbers, underscores (_), dots (.), and hyphens (-) are allowed
       product_id        = string           # Akamai Product ID. see details at https://techdocs.akamai.com/terraform/docs/common-identifiers#product-ids
-      cp_code_name      = string           # Name of the CP Code to be associated with the property
+      custom_cp_name    = optional(string) # Name of the custom CP Code to be associated with the property. If not set, a new CP Code will be created
       site_shield_name  = optional(string) # Name of the Site Shield to be associated with the Property
       web_security_name = optional(string) # Name of the Web Security configuration to be associated with the Property
 
 
-      # How many, split how???
-      certificate_name                                  = optional(string)       # Name of the FQDN for the certificate
-      certificate_acknowledge_pre_verification_warnings = optional(bool)         # Flag to acknowledge pre-verification warnings during certificate enrollment
-      certificate_sans                                  = optional(list(string)) # List of Subject Alternative Names (SANs) for the certificate
-      certificate_secure_network                        = optional(string)       # Flag to indicate whether to enable PCI compliant Secure Network for the certificate
-      certificate_sni_only                              = optional(bool)         # Flag to indicate whether to enable SNI only for the certificate
-      certificate_signature_algorithm                   = optional(string)       # Signature algorithm for the certificate
-      certificate_allow_duplicate_common_name           = optional(bool)         # Flag to allow duplicate common names for the certificate
-      certificate_chain_type                            = optional(string)       # Type of certificate chain to be used
-      certificate_timeout_certificate_creation          = optional(string)       # Timeout for Certificate creation operations
-      certificate_timeout_certificate_validation        = optional(string)       # Timeout for Certificate validation operations
+      # How many, split how??? -> 1 per property???
+      certificate_name                                  = optional(string) # Name of the FQDN for the certificate to be created, mandatory for WAF enabled properties
+      certificate_acknowledge_pre_verification_warnings = optional(bool)   # Flag to acknowledge pre-verification warnings during certificate enrollment
+      certificate_secure_network                        = optional(string) # Flag to indicate whether to enable PCI compliant Secure Network for the certificate
+      certificate_sni_only                              = optional(bool)   # Flag to indicate whether to enable SNI only for the certificate
+      certificate_signature_algorithm                   = optional(string) # Signature algorithm for the certificate
+      certificate_allow_duplicate_common_name           = optional(bool)   # Flag to allow duplicate common names for the certificate
+      certificate_chain_type                            = optional(string) # Type of certificate chain to be used
+      certificate_timeout_certificate_creation          = optional(string) # Timeout for Certificate creation operations
+      certificate_timeout_certificate_validation        = optional(string) # Timeout for Certificate validation operations
+      certificate_network_configuration = optional(object({
+        disallowed_tls_versions = optional(list(string)) # List of disallowed TLS versions for the certificate network configuration
+        clone_dns_names         = optional(bool)         # Flag to enable the certificate provisioning system directs traffic using all the SANs listed at the time of enrollment creation. null uses default behavior
+        geography               = optional(string)       # Geography for the certificate network configuration. Possible values are 'core', 'china+core' or 'russia+core'
+        ocsp_stapling           = optional(string)       # OCSP Stapling setting for the certificate network configuration. Possible values are 'on', 'off' or 'not-set'
+        preferred_ciphers       = optional(string)       # Preferred ciphers for the certificate network configuration. null uses default behavior
+        must_have_ciphers       = optional(string)       # Must have ciphers for the certificate network configuration. null uses default behavior
+        quic_enabled            = optional(bool)         # Flag to enable QUIC for the certificate network configuration. null uses default behavior
+      }))
 
-
-      # How many, which ones???
+      # How many, which ones??? -> 1 per property???
       edge_hostname_affix               = optional(string)       # Affix to identify the name to be used in the edge hostname
       edge_hostname_type                = optional(string)       # Type to be used in the Edge Hostname, possible values: enhanced, standard, shared or non-tls
       edge_hostname_ip_behavior         = optional(string)       # IP Behavior to be used by the Edge Hostname, possible values: IPV_4 or IPV6_COMPLIANCE / IPV6_PERFORMANCE
@@ -94,17 +101,24 @@ variable "akamai_map" {
       edge_hostname_status_update_email = optional(list(string)) # Status update email list to inform of the Edge Hostname changes
       edge_hostname_timeout             = optional(string)       # Timeout for Edge Hostname update operations to override default 20m
 
+      # All dns records associated with the property
+      # map of records by zone?
+      # what security content per record?
+      # how to manage root domain records? @? ""? full fqdn?
 
-
-
-      origin_type         = string                 # Origin Type: "CUSTOMER", "AKAMAI", "CLOUDFRONT", "AZURE", "GCP", "S3"
-      staging_network     = optional(string)       # Staging network to be used: "AKAMAI", "INTERNAL", "EXTERNAL"
-      production_network  = optional(string)       # Production network to be used: "AKAMAI", "INTERNAL", "EXTERNAL"
-      waf_profile         = optional(string)       # WAF Profile name to be associated with the property
-      bot_manager_profile = optional(string)       # Bot Manager Profile name to be associated with the property
-      rules               = optional(list(string)) # List of additional rules to be included in the property
+      dns_configuration = optional(map(object({
+        zone_name = string              # DNS Zone name. Only letters, numbers, underscores (_), dots (.), and hyphens (-) are allowed. eg. example.com
+        records = list(object({         # List of DNS records to be created in the zone
+          name       = string           # DNS record name (e.g., www)
+          type       = string           # DNS record type (e.g., A, CNAME, MX, AKAMAICDN, AKAMAITLC, TXT)
+          targets    = list(string)     # DNS record target values (IPs, domain names, etc.) varies by record type
+          ttl        = optional(number) # DNS record TTL in seconds (If not set, default value will be used)
+          priority   = optional(number) # DNS record priority if applicable to all targets, else don't set
+          type_value = optional(number) # DNS record type value
+        }))
+      })))
     })))
-  }))
+  })
 }
 
 variable "organization_details" {
@@ -151,14 +165,14 @@ variable "organization_details" {
     })
     ## Certificate CSR details ##
     # optional values default to organization values if not set
-    certificate_csr = object({
+    certificate_csr = optional(object({
       preferred_trust_chain = optional(string, null) # Preferred trust chain for the certificate
       country_code          = optional(string, null) # CSR country code
       state                 = optional(string, null) # CSR state
       city                  = optional(string, null) # CSR city
       organization          = optional(string, null) # CSR organization
       organizational_unit   = optional(string, null) # CSR organizational unit
-    })
+    }))
   }))
   default = null
 }

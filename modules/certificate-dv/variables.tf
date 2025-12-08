@@ -4,11 +4,6 @@ variable "contract" {
   type        = string
 }
 
-variable "zone" {
-  description = "Zone where the dns record validation will be created"
-  type        = string
-}
-
 variable "name" {
   description = "Name of the FQDN for the certificate"
   type        = string
@@ -20,10 +15,30 @@ variable "acknowledge_pre_verification_warnings" {
   default     = null
 }
 
+## One of the either methods to specify SANs for the certificate must be provided
+# Simple method to specify SANs as a list of records for a single zone
+variable "zone" {
+  description = "Zone where the dns record validation will be created"
+  type        = string
+  default     = ""
+}
 variable "sans" {
-  description = "List of Subject Alternative Names (SANs) for the certificate"
+  description = "List of Subject Alternative Names (SANs) for the certificate for a single zone"
   type        = list(string)
-  default     = null
+  default     = []
+}
+# Complex method to specify SANs through a map of zones with records
+variable "zone_sans_map" {
+  description = "Map of zones with lists of records for Subject Alternative Names (SANs) for the certificate"
+  type = map(object({
+    zone_name = string
+    records   = list(object({ name = string }))
+  }))
+  validation {
+    condition     = (length(var.sans) > 0 && var.zone != "") || length(var.zone_sans_map) > 0
+    error_message = "Either 'sans' list or 'zone_sans_map' must be provided with at least one SAN."
+  }
+  default = {}
 }
 
 variable "secure_network" {

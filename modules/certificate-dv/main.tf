@@ -1,8 +1,20 @@
+# Flatten the map of zone SANs into a list of SANs for the certificate enrollment
+locals {
+  zone_sans = try(var.zone_sans_map, {})
+  flat_san_list = flatten([
+    for zone_key, zone_config in local.zone_sans :
+    [
+      for record_index, record in zone_config.records :
+      "${record.name}.${zone_config.zone_name}"
+    ]
+  ])
+}
+
 resource "akamai_cps_dv_enrollment" "certificate" {
   contract_id                           = var.contract
   acknowledge_pre_verification_warnings = var.acknowledge_pre_verification_warnings
   common_name                           = var.name
-  sans                                  = var.sans
+  sans                                  = var.sans != "" ? var.sans : local.flat_san_list
   secure_network                        = var.secure_network
   sni_only                              = var.sni_only
   allow_duplicate_common_name           = var.allow_duplicate_common_name
@@ -64,17 +76,61 @@ resource "akamai_cps_dv_enrollment" "certificate" {
   }
 }
 
-resource "akamai_dns_record" "cert-txt-validation" {
-  for_each   = { for san in akamai_cps_dv_enrollment.certificate.dns_challenges : san.domain => san }
-  zone       = var.zone
-  name       = each.value.full_path
-  recordtype = "TXT"
-  ttl        = 60
-  target     = ["${each.value.response_body}"]
+# Flatten the map of DNS challenges from the certificate enrollment and create the combine them with zone info
+locals {
+  dns_challenges_map = {
+    for san in akamai_cps_dv_enrollment.certificate.dns_challenges : san.domain => san
+  }
+  dns_challenge_map_simple = var.zone != "" ? {
+    for domain_key, challenge_object in local.dns_challenges_map :
+    domain_key => {
+      full_path     = challenge_object.full_path
+      response_body = challenge_object.response_body
+    }
+  } : {}
+  flattened_dns_records = merge([
+    for zone_key, zone_config in local.zone_sans :
+    {
+      for record_index, record in zone_config.records :
+      "${zone_config.zone}-${record_index}" => {
+        zone = zone_config.zone_name
+        san  = "${record.name}.${zone_config.zone_name}"
+      }
+    }
+  ])
+  dns_challenge_map_complex = {
+    for key, record_info in local.flattened_dns_records :
+    key => {
+      challenge = lookup(local.dns_challenges_map, record_info.san, null)
+      zone      = record_info.zone
+    }
+    if lookup(local.dns_challenges_map, record_info.san, null) != null
+  }
+}
+module "cert_txt_validation_complex" {
+  for_each    = local.dns_challenge_map_complex
+  source      = "../dns-records"
+  zone        = each.value.zone
+  record      = each.value.full_path
+  type        = "TXT"
+  ttl         = 60
+  target_list = ["${each.value.response_body}"]
+}
+module "cert_txt_validation_simple" {
+  for_each    = local.dns_challenge_map_simple
+  source      = "../dns-records"
+  zone        = var.zone
+  record      = each.value.full_path
+  type        = "TXT"
+  ttl         = 60
+  target_list = ["${each.value.response_body}"]
 }
 
-resource "time_sleep" "cert-txt-wait" {
-  depends_on      = [akamai_dns_record.cert-txt-validation]
+resource "time_sleep" "cert_txt_wait" {
+  depends_on = [
+    akamai_dns_record.cert_txt_validation_simple,
+    akamai_dns_record.cert_txt_validation_complex,
+  ]
   create_duration = "300s"
 }
 
@@ -82,7 +138,7 @@ locals {
   san_list = distinct(concat(var.sans, [var.name]))
 }
 resource "akamai_cps_dv_validation" "cert-validation" {
-  depends_on    = [time_sleep.cert-txt-wait]
+  depends_on    = [time_sleep.cert_txt_wait]
   enrollment_id = akamai_cps_dv_enrollment.certificate.id
   sans          = local.san_list
   timeouts {
