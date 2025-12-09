@@ -23,6 +23,8 @@ locals {
       }
     }
   ])
+  final_rule = length(try(var.custom_json_rules, "")) > 0 ? var.custom_json_rules : data.akamai_property_rules_builder.default_rule.json
+
 }
 
 resource "random_string" "shield_prefix" {
@@ -41,7 +43,7 @@ resource "akamai_property" "property" {
   group_id      = var.group
   version_notes = try(var.version_notes, null)
   rule_format   = var.rule_format
-  rules         = data.akamai_property_rules_builder.final-rule.json
+  rules         = local.final_rule
   dynamic "hostnames" {
     for_each = local.flattened_waf_dns_records
     content {

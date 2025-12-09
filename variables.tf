@@ -74,9 +74,11 @@ variable "akamai_map" {
       custom_cp_name      = optional(string) # Name of the custom CP Code to be associated with the property. If not set, a new CP Code will be created
       site_shield_name    = optional(string) # Name of the Site Shield to be associated with the Property, recomended for WAF activated properties
       web_security_name   = optional(string) # Name of the Web Security configuration to be associated with the Property
-      rule_format         = optional(string) # Rule format for the Property. Possible values: 'latest' or see specific values: https://techdocs.akamai.com/terraform/docs/pm-ds-rule-formatsº
-
-
+      ### Rule Configurations ###
+      rule_format           = optional(string)       # Rule format for the Property. Possible values: 'latest' or see specific values: https://techdocs.akamai.com/terraform/docs/pm-ds-rule-formatsº
+      custom_json_rules     = optional(string)       # Custom JSON rules to be applied to the Property, overrides default rules if provided
+      default_json_rules    = optional(bool)         # Flag to indicate whether to use default JSON rules for the Property if custom_json_rules is not provided
+      additional_json_rules = optional(list(string)) # List of additional JSON rules to be merged into the default Property rules
       ### Activation Configurations ###
       auto_acknowledge_rule_warnings_staging    = optional(bool)   # Flag to auto acknowledge rule warnings during staging activation
       auto_acknowledge_rule_warnings_production = optional(bool)   # Flag to auto acknowledge rule warnings during production activation
@@ -122,11 +124,9 @@ variable "akamai_map" {
           use_case = string
         })))
       }))
-      # All dns records associated with the property
-      # map of records by zone?
-      # what security content per record?
-      # how to manage root domain records? @? ""? full fqdn?
-
+      ### DNS Records Configuration ###
+      # All dns records associated with the property, organized by zones
+      # keep empty "" for root domain as akamai does not support @
       host_configuration = map(object({
         zone = string                               # DNS Zone name. Only letters, numbers, underscores (_), dots (.), and hyphens (-) are allowed. eg. example.com
         records = list(object({                     # List of DNS records to be created in the zone

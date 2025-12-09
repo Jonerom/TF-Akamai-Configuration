@@ -152,6 +152,9 @@ module "waf_property" {
   timeout_production_activation             = try(each.value.timeout_production_activation, null)
   edge_hostname                             = module.edge_hostname[each.key].edge_hostname
   host_configuration                        = each.value.host_configuration
+  custom_json_rules                         = try(each.value.custom_json_rules, null)
+  default_json_rules                        = try(each.value.default_json_rules, null)
+  additional_json_rules                     = try(each.value.additional_json_rules, null)
 }
 
 # Generate the map for the NON WAF secured property if the certificate_name is not set.
@@ -182,15 +185,10 @@ module "property" {
   timeout_staging_activation                = try(each.value.timeout_staging_activation, null)
   timeout_production_activation             = try(each.value.timeout_production_activation, null)
   host_configuration                        = each.value.host_configuration
+  custom_json_rules                         = try(each.value.custom_json_rules, null)
+  default_json_rules                        = try(each.value.default_json_rules, null)
+  additional_json_rules                     = try(each.value.additional_json_rules, null)
 }
-
-
-/*
-validate that the cp code product_id matches property product_id in case it's not new
-
-
-
-create property
 
 
 /*
