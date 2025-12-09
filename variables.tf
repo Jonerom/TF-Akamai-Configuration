@@ -66,61 +66,89 @@ variable "akamai_map" {
     ## Properties Configuration  ##
     # Configuration for each Property to be created
     property_configuration = optional(map(object({
-      property_name     = string           # Property name. Only letters, numbers, underscores (_), dots (.), and hyphens (-) are allowed
-      product_id        = string           # Akamai Product ID. see details at https://techdocs.akamai.com/terraform/docs/common-identifiers#product-ids
-      custom_cp_name    = optional(string) # Name of the custom CP Code to be associated with the property. If not set, a new CP Code will be created
-      site_shield_name  = optional(string) # Name of the Site Shield to be associated with the Property
-      web_security_name = optional(string) # Name of the Web Security configuration to be associated with the Property
+      property_name       = string           # Property name. Only letters, numbers, underscores (_), dots (.), and hyphens (-) are allowed
+      support_team_emails = list(string)     # Email address(es) of the support team(s) for notifications related to the Property activations
+      product_id          = string           # Akamai Product ID. see details at https://techdocs.akamai.com/terraform/docs/common-identifiers#product-ids
+      version_note        = optional(string) # Version note for the Property
+      activation_note     = optional(string) # Activation note for the Property
+      custom_cp_name      = optional(string) # Name of the custom CP Code to be associated with the property. If not set, a new CP Code will be created
+      site_shield_name    = optional(string) # Name of the Site Shield to be associated with the Property, recomended for WAF activated properties
+      web_security_name   = optional(string) # Name of the Web Security configuration to be associated with the Property
+      rule_format         = optional(string) # Rule format for the Property. Possible values: 'latest' or see specific values: https://techdocs.akamai.com/terraform/docs/pm-ds-rule-formatsº
 
 
-      # How many, split how??? -> 1 per property???
-      certificate_name                                  = optional(string) # Name of the FQDN for the certificate to be created, mandatory for WAF enabled properties
-      certificate_acknowledge_pre_verification_warnings = optional(bool)   # Flag to acknowledge pre-verification warnings during certificate enrollment
-      certificate_secure_network                        = optional(string) # Flag to indicate whether to enable PCI compliant Secure Network for the certificate
-      certificate_sni_only                              = optional(bool)   # Flag to indicate whether to enable SNI only for the certificate
-      certificate_signature_algorithm                   = optional(string) # Signature algorithm for the certificate
-      certificate_allow_duplicate_common_name           = optional(bool)   # Flag to allow duplicate common names for the certificate
-      certificate_chain_type                            = optional(string) # Type of certificate chain to be used
-      certificate_timeout_certificate_creation          = optional(string) # Timeout for Certificate creation operations
-      certificate_timeout_certificate_validation        = optional(string) # Timeout for Certificate validation operations
+      ### Activation Configurations ###
+      auto_acknowledge_rule_warnings_staging    = optional(bool)   # Flag to auto acknowledge rule warnings during staging activation
+      auto_acknowledge_rule_warnings_production = optional(bool)   # Flag to auto acknowledge rule warnings during production activation
+      timeout_staging_activation                = optional(string) # Timeout for Property's staging activation operation
+      timeout_production_activation             = optional(string) # Timeout for Property's production activation operation
+      ### Certificate Configurations ###
+      # General configuration for the certificate
+      # A name is mandatory for certificate creation
+      # Other values, if not set, default behavior will be used
+      certificate_general_configuration = optional(object({
+        certificate_name                      = (string)         # Name of certificate to be created, mandatory for WAF enabled properties
+        acknowledge_pre_verification_warnings = optional(bool)   # Flag to acknowledge pre-verification warnings during certificate enrollment
+        secure_network                        = optional(string) # Flag to indicate whether to enable PCI compliant Secure Network for the certificate
+        sni_only                              = optional(bool)   # Flag to indicate whether to enable SNI only for the certificate
+        signature_algorithm                   = optional(string) # Signature algorithm for the certificate
+        allow_duplicate_common_name           = optional(bool)   # Flag to allow duplicate common names for the certificate
+        chain_type                            = optional(string) # Type of certificate chain to be used
+        timeout_certificate_creation          = optional(string) # Timeout for Certificate creation operations
+        timeout_certificate_validation        = optional(string) # Timeout for Certificate validation operations
+      }))
+      # Network configuration for the certificate
+      # if not set, default behavior will be used
       certificate_network_configuration = optional(object({
         disallowed_tls_versions = optional(list(string)) # List of disallowed TLS versions for the certificate network configuration
         clone_dns_names         = optional(bool)         # Flag to enable the certificate provisioning system directs traffic using all the SANs listed at the time of enrollment creation. null uses default behavior
         geography               = optional(string)       # Geography for the certificate network configuration. Possible values are 'core', 'china+core' or 'russia+core'
         ocsp_stapling           = optional(string)       # OCSP Stapling setting for the certificate network configuration. Possible values are 'on', 'off' or 'not-set'
-        preferred_ciphers       = optional(string)       # Preferred ciphers for the certificate network configuration. null uses default behavior
-        must_have_ciphers       = optional(string)       # Must have ciphers for the certificate network configuration. null uses default behavior
-        quic_enabled            = optional(bool)         # Flag to enable QUIC for the certificate network configuration. null uses default behavior
+        preferred_ciphers       = optional(string)       # Preferred ciphers for the certificate network configuration.
+        must_have_ciphers       = optional(string)       # Must have ciphers for the certificate network configuration.
+        quic_enabled            = optional(bool)         # Flag to enable QUIC for the certificate network configuration.
       }))
-
-      # How many, which ones??? -> 1 per property???
-      edge_hostname_affix               = optional(string)       # Affix to identify the name to be used in the edge hostname
-      edge_hostname_type                = optional(string)       # Type to be used in the Edge Hostname, possible values: enhanced, standard, shared or non-tls
-      edge_hostname_ip_behavior         = optional(string)       # IP Behavior to be used by the Edge Hostname, possible values: IPV_4 or IPV6_COMPLIANCE / IPV6_PERFORMANCE
-      edge_hostname_ttl                 = optional(number)       # TTL to be used in the Edge Hostname
-      edge_hostname_status_update_email = optional(list(string)) # Status update email list to inform of the Edge Hostname changes
-      edge_hostname_timeout             = optional(string)       # Timeout for Edge Hostname update operations to override default 20m
-
+      ### Edge Hostname Configuration ###
+      # Configuration for the Edge Hostname associated with the Property
+      edge_hostname_configuration = optional(object({
+        hostname_affix = optional(string) # Affix to identify the name to be used in the edge hostname
+        type           = optional(string) # Type to be used in the Edge Hostname, possible values: enhanced, standard, shared or non-tls
+        ip_behavior    = optional(string) # IP Behavior to be used by the Edge Hostname, possible values: IPV_4 or IPV6_COMPLIANCE / IPV6_PERFORMANCE
+        ttl            = optional(number) # TTL to be used in the Edge Hostname
+        timeout        = optional(string) # Timeout for Edge Hostname update operations to override default 20m
+        use_cases = optional(list(object({
+          option   = string
+          type     = string
+          use_case = string
+        })))
+      }))
       # All dns records associated with the property
       # map of records by zone?
       # what security content per record?
       # how to manage root domain records? @? ""? full fqdn?
 
-      dns_configuration = optional(map(object({
-        zone_name = string              # DNS Zone name. Only letters, numbers, underscores (_), dots (.), and hyphens (-) are allowed. eg. example.com
-        records = list(object({         # List of DNS records to be created in the zone
-          name       = string           # DNS record name (e.g., www)
-          type       = string           # DNS record type (e.g., A, CNAME, MX, AKAMAICDN, AKAMAITLC, TXT)
-          targets    = list(string)     # DNS record target values (IPs, domain names, etc.) varies by record type
-          ttl        = optional(number) # DNS record TTL in seconds (If not set, default value will be used)
-          priority   = optional(number) # DNS record priority if applicable to all targets, else don't set
-          type_value = optional(number) # DNS record type value
+      host_configuration = map(object({
+        zone = string                               # DNS Zone name. Only letters, numbers, underscores (_), dots (.), and hyphens (-) are allowed. eg. example.com
+        records = list(object({                     # List of DNS records to be created in the zone
+          name                   = string           # DNS record name (e.g., www), keep empty "" for root domain as akamai does not support @
+          type                   = optional(string) # DNS record type (e.g., A, CNAME, MX, AKAMAICDN, AKAMAITLC, TXT), optional for WAF properties
+          targets                = list(string)     # DNS record target values (IPs, domain names, etc.) varies by record type
+          ttl                    = optional(number) # DNS record TTL in seconds (If not set, default value will be used)
+          priority               = optional(number) # DNS record priority if applicable to all targets, else don't set
+          type_value             = optional(number) # DNS record type value
+          cert_provisioning_type = optional(string) # Certificate provisioning type for the hostname, possible values: CPS_MANAGED, DEFAULT or CCM
+          ccm_certificates = optional(object({      # CCM certificate details for the hostname if cert_provisioning_type is CCM
+            id   = string                           # The certificate ID (e.g., "12345")
+            type = string                           # The certificate type, possible values: ecdsa" or "rsa"
+          }))
         }))
-      })))
+      }))
     })))
   })
 }
 
+# Organization Details #
+# Mandatory for certificate creation
 variable "organization_details" {
   description = "Organization details for certificate creation if required"
   type = optional(object({
