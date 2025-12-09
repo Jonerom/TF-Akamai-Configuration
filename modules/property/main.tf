@@ -24,7 +24,6 @@ locals {
     }
   ])
   final_rule = length(try(var.custom_json_rules, "")) > 0 ? var.custom_json_rules : data.akamai_property_rules_builder.default_rule.json
-
 }
 
 resource "random_string" "shield_prefix" {
@@ -59,6 +58,11 @@ resource "akamai_property" "property" {
       }
     }
   }
+  lifecycle {
+    ignore_changes = [
+      version_notes,
+    ]
+  }
 }
 
 resource "akamai_property_activation" "staging_activation" {
@@ -72,6 +76,11 @@ resource "akamai_property_activation" "staging_activation" {
   timeouts {
     default = try(var.timeout_staging_activation, null)
   }
+  lifecycle {
+    ignore_changes = [
+      note,
+    ]
+  }
 }
 
 resource "akamai_property_activation" "prod_activation" {
@@ -84,6 +93,11 @@ resource "akamai_property_activation" "prod_activation" {
   auto_acknowledge_rule_warnings = try(var.auto_acknowledge_rule_warnings_production, null)
   timeouts {
     default = try(var.timeout_production_activation, null)
+  }
+  lifecycle {
+    ignore_changes = [
+      note,
+    ]
   }
 }
 

@@ -151,9 +151,10 @@ module "waf_property" {
   timeout_staging_activation                = try(each.value.timeout_staging_activation, null)
   timeout_production_activation             = try(each.value.timeout_production_activation, null)
   edge_hostname                             = module.edge_hostname[each.key].edge_hostname
+  edge_hostname_type                        = try(each.value.edge_hostname_configuration.type, null)
   host_configuration                        = each.value.host_configuration
   custom_json_rules                         = try(each.value.custom_json_rules, null)
-  default_json_rules                        = try(each.value.default_json_rules, null)
+  default_json_rule_values                  = try(each.value.default_json_rules, null)
   additional_json_rules                     = try(each.value.additional_json_rules, null)
 }
 
@@ -186,7 +187,7 @@ module "property" {
   timeout_production_activation             = try(each.value.timeout_production_activation, null)
   host_configuration                        = each.value.host_configuration
   custom_json_rules                         = try(each.value.custom_json_rules, null)
-  default_json_rules                        = try(each.value.default_json_rules, null)
+  default_json_rule_values                  = try(each.value.default_json_rule_values, null)
   additional_json_rules                     = try(each.value.additional_json_rules, null)
 }
 

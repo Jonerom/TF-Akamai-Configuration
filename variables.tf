@@ -56,8 +56,7 @@ variable "akamai_map" {
     # site_shield_configuration = optional(map(object({ (not implemented yet WIP)    
     ##  Custom Content Provider Configuration  ##
     # Content Provider configuration for custom billing managament
-    # Only required if you prefer tu use a custom organization of CP codes
-    # ignore for properties based CP Codes
+    # Only required if you prefer tu use a custom organization of CP codes, ignore for properties based CP Codes
     custom_content_provider_configuration = optional(map(object({
       product_id = string           # Akamai Product ID. see details at https://techdocs.akamai.com/terraform/docs/common-identifiers#product-ids
       cp_name    = string           # CP Name. Only letters, numbers, spaces, dots (.), and hyphens (-) are allowed
@@ -72,12 +71,52 @@ variable "akamai_map" {
       version_note        = optional(string) # Version note for the Property
       activation_note     = optional(string) # Activation note for the Property
       custom_cp_name      = optional(string) # Name of the custom CP Code to be associated with the property. If not set, a new CP Code will be created
-      site_shield_name    = optional(string) # Name of the Site Shield to be associated with the Property, recomended for WAF activated properties
-      web_security_name   = optional(string) # Name of the Web Security configuration to be associated with the Property
+      ### Security Configurations ###
+      site_shield_name  = optional(string) # Name of the Site Shield to be associated with the Property, recomended for WAF activated properties
+      web_security_name = optional(string) # Name of the Web Security configuration to be associated with the Property
       ### Rule Configurations ###
-      rule_format           = optional(string)       # Rule format for the Property. Possible values: 'latest' or see specific values: https://techdocs.akamai.com/terraform/docs/pm-ds-rule-formatsº
-      custom_json_rules     = optional(string)       # Custom JSON rules to be applied to the Property, overrides default rules if provided
-      default_json_rules    = optional(bool)         # Flag to indicate whether to use default JSON rules for the Property if custom_json_rules is not provided
+      rule_format = optional(string) # Rule format for the Property. Possible values: 'latest' or see specific values: https://techdocs.akamai.com/terraform/docs/pm-ds-rule-formatsº
+      # Recommendation is to customize rules via additional_json_rules but basict_json_rules can provide an easier way to get started
+      default_json_rule_values = optional(object({
+        comments    = optional(string)
+        origin_type = string # Origin type for the default origin behavior, possible values: CUSTOMER, NET_STORAGE or AKAMAI_OBJECT_STORAGE
+        # CUSTOMER origin type values
+        forward_host_header           = optional(string) # Sets the Host header sent to the origin server, possible values: REQUEST_HOST_HEADER, ORIGIN_HOSTNAME or CUSTOM
+        custom_forward_host_header    = optional(string) # Host header value when forward_host_header is set to CUSTOM
+        cache_key_hostname            = optional(string) # Hostname used in the cache key, possible values: REQUEST_HOST_HEADER or ORIGIN_HOSTNAME
+        ip_version                    = optional(string) # IP version used to connect to the origin, possible values: IPV4, IPV6 or DUAL_STACK
+        compress                      = optional(bool)   # Flag to enable gzip compression between Akamai and the origin
+        enable_true_client_ip         = optional(bool)   # Flag to enable True-Client-IP header to be sent to the origin
+        true_client_ip_header         = optional(string) # Name of the True-Client-IP header sent to the origin when enable_true_client_ip is true
+        true_client_ip_client_setting = optional(bool)   # Flag to enable client setting for True-Client-IP header when enable_true_client_ip is true
+        http_port                     = optional(number) # Origin HTTP port
+        https_port                    = optional(number) # Origin HTTPS port
+        min_tls_version               = optional(string) # Minimum TLS version for HTTPS connections to the origin, possible values: TLSV1_1, TLSV1_2, TLSV1_3 or DYNAMIC
+        origin_sni                    = optional(bool)   # Flag to enable SNI for HTTPS connections to the origin
+        verification_mode             = optional(string) # Origin certificate verification mode, possible values: PLATFORM_SETTINGS, THIRD_PARTY or CUSTOM
+        custom_valid_cn_values        = optional(string) # Custom common name values for origin certificate verification when verification_mode is CUSTOM
+        origin_certs_to_honor         = optional(string) # Origin certificates to honor when verification_mode is CUSTOM, possible values: COMBO (all), STANDARD_​CERTIFICATE_​AUTHORITIES, CUSTOM_​CERTIFICATE_​AUTHORITIES	 or CUSTOM_​CERTIFICATES
+        # NET_STORAGE origin type values
+        net_storage = optional(object({
+          account_id   = string           # NetStorage account ID
+          origin_host  = string           # NetStorage origin hostname
+          use_sps      = optional(bool)   # Flag to use Secure Path Service (SPS) for NetStorage origin authentication
+          sps_key_name = optional(string) # SPS key name for NetStorage origin authentication when use_sps is true
+        }))
+        # AKAMAI_OBJECT_STORAGE origin type values
+        akamai_object_storage = optional(object({
+          container_name = string # Akamai Object Storage container name
+          origin_host    = string # Akamai Object Storage origin hostname
+        }))
+        # Caching behavior values
+        caching_behavior      = optional(string) # Caching behavior option in the mandatory rules, possible values: "NO_STORE", "BYPASS_CACHE", "MAX_AGE", "EXPIRES", "CACHE_CONTROL" or "CACHE_CONTROL_AND_EXPIRES"
+        must_revalidate       = optional(bool)   # Flag to set the Must-Revalidate directive in the caching behavior of the mandatory rules, valid only for "MAX_AGE", "EXPIRES", "CACHE_CONTROL" and "CACHE_CONTROL_AND_EXPIRES"
+        ttl                   = optional(string) # TTL value in for the caching behavior of the mandatory rules (eg: 30s, 1m, 2h), valid only for "MAX_AGE","EXPIRES", "CACHE_CONTROL" and "CACHE_CONTROL_AND_EXPIRES"
+        enhanced_rfc_support  = optional(bool)   # Flag to enable enhanced RFC compliance in the caching behavior of the mandatory rules, valid only for "CACHE_CONTROL" and "CACHE_CONTROL_AND_EXPIRES"
+        honor_private         = optional(bool)   # Flag to honor private caching directives in the caching behavior of the mandatory rules, valid only for "CACHE_CONTROL" and "CACHE_CONTROL_AND_EXPIRES"
+        honor_must_revalidate = optional(bool)   # Flag to honor must-revalidate directives in the caching behavior of the mandatory rules, valid only for "CACHE_CONTROL" and "CACHE_CONTROL_AND_EXPIRES"
+      }))
+      basic_json_rules      = optional(bool)         # Flag to indicate whether to use basic JSON rules for the Property if additional_json_rules is not set
       additional_json_rules = optional(list(string)) # List of additional JSON rules to be merged into the default Property rules
       ### Activation Configurations ###
       auto_acknowledge_rule_warnings_staging    = optional(bool)   # Flag to auto acknowledge rule warnings during staging activation
@@ -86,8 +125,7 @@ variable "akamai_map" {
       timeout_production_activation             = optional(string) # Timeout for Property's production activation operation
       ### Certificate Configurations ###
       # General configuration for the certificate
-      # A name is mandatory for certificate creation
-      # Other values, if not set, default behavior will be used
+      # A name is mandatory for certificate creation,other values, if not set, default behavior will be used
       certificate_general_configuration = optional(object({
         certificate_name                      = (string)         # Name of certificate to be created, mandatory for WAF enabled properties
         acknowledge_pre_verification_warnings = optional(bool)   # Flag to acknowledge pre-verification warnings during certificate enrollment
@@ -112,8 +150,9 @@ variable "akamai_map" {
       }))
       ### Edge Hostname Configuration ###
       # Configuration for the Edge Hostname associated with the Property
+      # A name affix is mandatory for certificate creation,other values, if not set, default behavior will be used
       edge_hostname_configuration = optional(object({
-        hostname_affix = optional(string) # Affix to identify the name to be used in the edge hostname
+        hostname_affix = string           # Affix to identify the function or usage in the edge hostname
         type           = optional(string) # Type to be used in the Edge Hostname, possible values: enhanced, standard, shared or non-tls
         ip_behavior    = optional(string) # IP Behavior to be used by the Edge Hostname, possible values: IPV_4 or IPV6_COMPLIANCE / IPV6_PERFORMANCE
         ttl            = optional(number) # TTL to be used in the Edge Hostname
