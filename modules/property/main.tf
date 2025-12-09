@@ -1,19 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 locals {
   flattened_waf_dns_records = var.edge_hostname != null ? (
     merge([
@@ -57,7 +41,7 @@ resource "akamai_property" "property" {
   group_id      = var.group
   version_notes = try(var.version_notes, null)
   rule_format   = var.rule_format
-  rules         = data.akamai_property_rules_builder.default-rule.json
+  rules         = data.akamai_property_rules_builder.final-rule.json
   dynamic "hostnames" {
     for_each = local.flattened_waf_dns_records
     content {

@@ -154,9 +154,6 @@ module "waf_property" {
   host_configuration                        = each.value.host_configuration
 }
 
-
-
-
 # Generate the map for the NON WAF secured property if the certificate_name is not set.
 locals {
   non_waf_property_config = try(var.akamai_map.property_configuration, {})
@@ -168,13 +165,23 @@ locals {
 }
 
 module "property" {
-  for_each   = try(local.property_map, {})
-  source     = "./modules/property"
-  contract   = data.akamai_contract.my_contract.id
-  group      = data.akamai_group.my_group.id
-  name       = each.value.property_name
-  product_id = each.value.product_id
-  cp_code_id = try(module.custom_cp_code[each.value.custom_cp_name].id, module.zone_cp_code[each.key].id)
+  for_each                                  = try(local.property_map, {})
+  source                                    = "./modules/property"
+  contract                                  = data.akamai_contract.my_contract.id
+  group                                     = data.akamai_group.my_group.id
+  name                                      = each.value.property_name
+  support_team_emails                       = each.value.support_team_emails
+  rule_format                               = try(each.value.rule_format, null)
+  product_id                                = each.value.product_id
+  cp_code_id                                = try(module.custom_cp_code[each.value.cp_code_name].id, module.zone_cp_code[each.key].id)
+  site_shield_name                          = try(each.value.site_shield_name, null)
+  version_notes                             = try(each.value.version_note, null)
+  auto_acknowledge_rule_warnings_staging    = try(each.value.auto_acknowledge_rule_warnings_staging, null)
+  auto_acknowledge_rule_warnings_production = try(each.value.auto_acknowledge_rule_warnings_production, null)
+  activation_note                           = try(each.value.activation_note, null)
+  timeout_staging_activation                = try(each.value.timeout_staging_activation, null)
+  timeout_production_activation             = try(each.value.timeout_production_activation, null)
+  host_configuration                        = each.value.host_configuration
 }
 
 
