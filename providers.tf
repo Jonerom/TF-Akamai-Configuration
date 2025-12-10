@@ -2,11 +2,15 @@ terraform {
   required_providers {
     akamai = {
       source  = "akamai/akamai"
-      version = ">= 9.0.0"
+      version = "= 9.2.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = ">= 3.0.0"
+      version = "= 3.7.2"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "= 0.13.1"
     }
   }
   required_version = ">= 1.0"

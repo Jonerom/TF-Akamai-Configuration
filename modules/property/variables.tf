@@ -53,7 +53,7 @@ variable "edge_hostname" {
 variable "edge_hostname_type" {
   description = "Edge Hostname type as per ceritificate type, possible values: enhanced, standard, shared or non-tls"
   type        = string
-  default     = "null"
+  default     = null
 }
 
 variable "host_configuration" {

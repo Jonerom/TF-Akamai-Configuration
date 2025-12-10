@@ -52,7 +52,7 @@ resource "akamai_dns_zone" "secondary" {
       acl            = outbound_zone_transfer.value.acl
       notify_targets = outbound_zone_transfer.value.notify_targets
       dynamic "tsig_key" {
-        for_each = lookup(outbound_zone_transfer.value, "tsig_key", null) != null ? [outbound_zone_transfer.value.tsig_key] : []
+        for_each = var.outbound_zone_transfer_tsig_key != null ? [var.outbound_zone_transfer_tsig_key] : []
         content {
           name      = tsig_key.value.name
           algorithm = tsig_key.value.algorithm

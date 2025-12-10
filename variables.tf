@@ -15,17 +15,17 @@ variable "akamai_map" {
         enabled        = bool                     # Enable/Disable Outbound Zone Transfer
         acl            = list(string)             # List of IP addresses allowed to transfer the zone
         notify_targets = list(string)             # List of IP addresses to be notified of zone changes
-        tsig_key = optional(object({              #  TSIG Key for Outbound Zone Transfer
-          name      = string                      # TSIG Key name
-          algorithm = string                      # TSIG Key algorithm
-          secret    = string                      # TSIG Key secret
-        }))
+      }))
+      outbound_zone_transfer_tsig_key = optional(object({ # TSIG Key for Outbound Zone Transfer
+        name      = string                                # TSIG Key name
+        algorithm = string                                # TSIG Key algorithm
+        secret    = string                                # TSIG Key secret - do not store in version control (use sensitive variables or secret manager instead)
       }))
       masters = optional(list(string)) # List of Master IP addresses for Secondary zones
       tsig_key = optional(object({     # TSIG Key for Secondary zones
         name      = string             # TSIG Key name
         algorithm = string             # TSIG Key algorithm
-        secret    = string             # TSIG Key secret
+        secret    = string             # TSIG Key secret - do not store in version control (use sensitive variables or secret manager instead)
       }))
       target = optional(string) # Target zone for Alias zones
     }))

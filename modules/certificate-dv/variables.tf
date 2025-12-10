@@ -96,14 +96,14 @@ variable "network_configuration" {
 
 variable "csr" {
   description = "Certificate Signing Request (CSR) details for the certificate unless different from Organizations details"
-  type = object({
+  type = optional(object({
     preferred_trust_chain = optional(string, null) # Preferred trust chain for the CSR
     country_code          = optional(string, null) # Country code for the CSR
     state                 = optional(string, null) # State or province for the CSR
     city                  = optional(string, null) # City for the CSR
     organization          = optional(string, null) # Organization name for the CSR
     organizational_unit   = optional(string, null) # Organizational unit for the CSR
-  })
+  }))
 }
 
 variable "organization" {

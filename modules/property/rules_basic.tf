@@ -539,9 +539,9 @@ data "akamai_property_rules_builder" "other_static" {
       criterion {
         file_extension {
           match_operator = "IS_ONE_OF"
-          values          = [
-            "aif", "aiff", "au", "avi", "bin", "bmp", "cab", "carb", "cct", "cdf", "class", "dcr", "dtd", "exe", "flv", "gcf", "gff", "grv", "hdml", "hqx", "ini", "jar", "jxr", "mid", "midi", 
-            "mov", "mp3", "mp4", "mpeg", "mpg", "nc", "pict", "pct", "ppc", "pws", "swa", "tif", "tiff", "txt", "vbs", "w32", "wav", "wbmp", "wml", "wmlc", "wmls", "wmlsc", "xsd", "zip"]
+          values = [
+            "aif", "aiff", "au", "avi", "bin", "bmp", "cab", "carb", "cct", "cdf", "class", "dcr", "dtd", "exe", "flv", "gcf", "gff", "grv", "hdml", "hqx", "ini", "jar", "jxr", "mid", "midi",
+          "mov", "mp3", "mp4", "mpeg", "mpg", "nc", "pict", "pct", "ppc", "pws", "swa", "tif", "tiff", "txt", "vbs", "w32", "wav", "wbmp", "wml", "wmlc", "wmls", "wmlsc", "xsd", "zip"]
         }
       }
       criteria_must_satisfy = "all"
@@ -708,7 +708,7 @@ data "akamai_property_rules_builder" "allowed_methods" {
     }
     labels = [rule_format_block.key]
     content {
-      name = "Obfuscate debug information"
+      name = "Allowed methods"
       behavior {
         allow_delete {
           value {
@@ -741,6 +741,13 @@ data "akamai_property_rules_builder" "allowed_methods" {
       }
       behavior {
         allow_put {
+          value {
+            enabled = true
+          }
+        }
+      }
+      behavior {
+        web_sockets {
           value {
             enabled = true
           }
@@ -791,8 +798,7 @@ data "akamai_property_rules_builder" "obfuscate_backend" {
           value {
             action                      = "DELETE"
             standard_delete_header_name = "OTHER"
-            custom_header_name          = "Server
-            "
+            custom_header_name          = "Server"
           }
         }
       }
@@ -983,8 +989,8 @@ data "akamai_property_rules_builder" "compressible_objects" {
           match_operator       = "IS_ONE_OF"
           match_wildcard       = true
           match_case_sensitive = false
-          values               = [
-            "application/*javascript*", "application/*xml*", "application/text*", "application/*json*", "application/vnd-ms-fontobject", "application/vnd.microsoft.icon", 
+          values = [
+            "application/*javascript*", "application/*xml*", "application/text*", "application/*json*", "application/vnd-ms-fontobject", "application/vnd.microsoft.icon",
             "application/x-font-opentype", "application/x-font-truetype", "application/font-ttf", "application/x-font-tff", "application/font-sfnt", "application/x-font-eot*",
             "application/x-tgif", "application/octet-stream*", "font/otf", "font/ttf", "font/eot", "font/opentype", "text/*", "image/svg+xml", "image/vnd.microsoft.icon", "image/x-icon"
           ]
