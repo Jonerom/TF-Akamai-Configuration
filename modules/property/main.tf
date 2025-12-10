@@ -12,17 +12,19 @@ locals {
       }
     ]...)
   ) : {}
-  flattened_dns_records = merge([
-    for zone_key, zone_config in var.host_configuration :
-    {
-      for record_index, record in zone_config.records :
-      "${zone_config.zone}-${record_index}" => {
-        zone   = zone_config.zone
-        name   = record.name
-        config = record
+  flattened_dns_records = var.edge_hostname == null ? (
+    merge([
+      for zone_key, zone_config in var.host_configuration :
+      {
+        for record_index, record in zone_config.records :
+        "${zone_config.zone}-${record_index}" => {
+          zone   = zone_config.zone
+          name   = record.name
+          config = record
+        }
       }
-    }
-  ])
+    ]...)
+  ) : {}
   final_rule = length(try(var.custom_json_rules, "")) > 0 ? var.custom_json_rules : data.akamai_property_rules_builder.default_rule.json
 }
 

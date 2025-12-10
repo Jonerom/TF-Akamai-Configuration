@@ -1,6 +1,15 @@
 // Default rule
 locals {
   rule_format_version = (var.rule_format != null) && (var.rule_format != "latest") ? var.rule_format : data.akamai_property_rule_formats.latest_format.rule_format[0]
+  all_jsons = concat(
+    ["${data.akamai_property_rules_builder.mandatory.json}"],
+    local.basic_json_rules,
+    local.additional_json_rules,
+    local.waf_json_rules,
+  )
+  basic_json_rules      = var.basic_json_rules ? local.basic_json_rule_values : []
+  additional_json_rules = var.additional_json_rules != null && length(try(var.additional_json_rules, [])) > 0 ? var.additional_json_rules : []
+  waf_json_rules        = local.waf_json_rules_values != null && length(try(local.waf_json_rules_values, [])) > 0 ? local.waf_json_rules_values : []
 }
 resource "random_string" "origin_prefix" {
   length  = 4
@@ -71,8 +80,9 @@ data "akamai_property_rules_builder" "mandatory" {
     }
     labels = [rule_format_block.key]
     content {
-      name     = "Caching"
-      children = local.mandatory_jsons
+      name                  = "Global configurations"
+      children              = local.mandatory_jsons
+      criteria_must_satisfy = "all"
     }
   }
 }
@@ -93,6 +103,7 @@ data "akamai_property_rules_builder" "cp_code" {
           }
         }
       }
+      criteria_must_satisfy = "all"
     }
   }
 }
@@ -115,6 +126,7 @@ data "akamai_property_rules_builder" "caching" {
           honor_must_revalidate = var.default_json_rule_values.caching_behavior == "CACHE_CONTROL" && var.default_json_rule_values.caching_behavior == "CACHE_CONTROL_AND_EXPIRES" ? var.default_json_rule_values.honor_must_revalidate : null
         }
       }
+      criteria_must_satisfy = "all"
     }
   }
 }
@@ -134,6 +146,7 @@ data "akamai_property_rules_builder" "site_shield" {
           }
         }
       }
+      criteria_must_satisfy = "all"
     }
   }
 }
