@@ -61,7 +61,19 @@ variable "tsig_key" {
     algorithm = string
     secret    = string
   })
-  default = null
+  default   = null
+  sensitive = true
+}
+
+variable "outbound_zone_transfer_tsig_key" {
+  description = "TSIG key for outbound zone transfers"
+  type = object({
+    name      = string
+    algorithm = string
+    secret    = string
+  })
+  default   = null
+  sensitive = true
 }
 
 variable "outbound_zone_transfer" {
@@ -70,11 +82,6 @@ variable "outbound_zone_transfer" {
     enabled        = bool
     acl            = list(string)
     notify_targets = list(string)
-    tsig_key = object({
-      name      = string
-      algorithm = string
-      secret    = string
-    })
   })
   default = null
 }
