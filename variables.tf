@@ -6,7 +6,7 @@ variable "akamai_map" {
     # Configuration for each DNS Zone to be created
     zone_configuration = map(object({
       zone_name                = string           # DNS Zone name. Only letters, numbers, underscores (_), dots (.), and hyphens (-) are allowed. eg. example.com
-      type                     = string           # Possible values are "primary", "secondary" or "alias"
+      type                     = optional(string) # Possible values are "primary", "secondary" or "alias"
       end_customer_id          = optional(string) # End Customer free-form identifier,ex. for reseller contracts
       comment                  = optional(string) # Comment for the DNS Zone
       sign_and_serve           = optional(bool)   # Sign and Serve enabled/disabled

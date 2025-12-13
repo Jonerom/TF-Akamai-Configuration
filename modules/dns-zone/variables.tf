@@ -18,7 +18,7 @@ variable "zone" {
 }
 
 variable "type" {
-  description = "value for zone type, e.g., primary or secondary"
+  description = "value for zone type, possible values: primary, secondary or alias"
   type        = string
   default     = "primary"
 }
