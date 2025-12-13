@@ -118,19 +118,19 @@ module "certificate" {
 }
 
 module "edge_hostname" {
-  for_each            = try(local.waf_property_map, {})
-  source              = "./modules/edge-hostname"
-  contract            = data.akamai_contract.my_contract.id
-  group               = data.akamai_group.my_group.id
-  product_id          = each.value.product_id
-  hostname            = "${each.value.property_name}-${try(each.value.edge_hostname_configuration.hostname_affix, null)}"
-  edge_hostname_type  = try(each.value.edge_hostname_configuration.type, null)
-  ip_behavior         = try(each.value.edge_hostname_configuration.ip_behavior, null)
-  ttl                 = try(each.value.edge_hostname_configuration.ttl, null)
-  status_update_email = try(each.value.support_team_emails, null)
-  use_cases           = try(each.value.edge_hostname_configuration.use_cases, null)
-  certificate_id      = module.certificate[each.key].id
-  timeout             = try(each.value.edge_hostname_configuration.timeout, null)
+  for_each                  = try(local.waf_property_map, {})
+  source                    = "./modules/edge-hostname"
+  contract                  = data.akamai_contract.my_contract.id
+  group                     = data.akamai_group.my_group.id
+  product_id                = each.value.product_id
+  hostname                  = "${each.value.property_name}-${try(each.value.edge_hostname_configuration.hostname_affix, null)}"
+  edge_hostname_type        = try(each.value.edge_hostname_configuration.type, null)
+  ip_behavior               = try(each.value.edge_hostname_configuration.ip_behavior, null)
+  ttl                       = try(each.value.edge_hostname_configuration.ttl, null)
+  status_update_email       = try(each.value.support_team_emails, null)
+  use_cases                 = try(each.value.edge_hostname_configuration.use_cases, null)
+  certificate_enrollment_id = module.certificate[each.key].id
+  timeout                   = try(each.value.edge_hostname_configuration.timeout, null)
 }
 
 module "waf_property" {
