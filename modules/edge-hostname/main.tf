@@ -39,3 +39,9 @@ resource "akamai_edge_hostname" "ehm" {
   }
 }
 
+resource "time_sleep" "ehm_wait" {
+  depends_on = [
+    akamai_edge_hostname.ehm
+  ]
+  create_duration = "20m"
+}
