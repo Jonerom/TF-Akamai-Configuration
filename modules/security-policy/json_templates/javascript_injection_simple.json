@@ -1,0 +1,18 @@
+{
+  "injectJavaScript": "${inject_javascript}",
+  "rules": [
+    {
+      "ruleName": "mandatory",
+      "injectJavaScript": "${inject_javascript}",
+      "conditions": [
+        {
+          "type": "hostCondition",
+          "positiveMatch": true,
+          "host": [
+            "fake.com"
+          ]
+        }
+      ]
+    }
+  ]
+}

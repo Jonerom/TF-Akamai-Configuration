@@ -1,6 +1,6 @@
 
 module "zone" {
-  for_each               = var.akamai_map.zone_configuration
+  for_each               = try(var.akamai_map.zone_configuration, {})
   source                 = "./modules/dns-zone"
   contract               = data.akamai_contract.my_contract.id
   group                  = data.akamai_group.my_group.id
@@ -33,7 +33,7 @@ locals {
   ])
 }
 module "non_property_records" {
-  for_each    = local.flattened_dns_records
+  for_each    = try(local.flattened_dns_records, {})
   source      = "./modules/dns-records"
   zone        = each.value.zone
   record      = each.value.record
@@ -191,13 +191,64 @@ module "property" {
   additional_json_rules                     = try(each.value.additional_json_rules, null)
 }
 
+# Generate the map of hostnames per Web Security configuration
+locals {
+  raw_hostname_list = flatten([
+    for prop_key, prop_value in try(var.akamai_map.property_configuration, {}) : [
+      for host_key, host_config in prop_value.host_configuration : [
+        for record in host_config.records : {
+          security_name = prop_value.web_security_name
+          full_hostname = record.name != "" ? "${record.name}.${host_config.zone}" : host_config.zone
+        }
+      ]
+    ]
+    if try(prop_value.web_security_name, null) != null
+  ])
+  hostname_config_map = {
+    for item in local.raw_hostname_list :
+    item.security_name => item.full_hostname...
+  }
+  clean_hostname_config_map = {
+    for sec_name, hostnames in local.hostname_config_map :
+    sec_name => distinct(hostnames)
+  }
+}
+
+module "config_creation" {
+  count                 = length(try(var.akamai_map.security_configuration, []))
+  source                = "./modules/security-config"
+  contract              = data.akamai_contract.my_contract.id
+  group                 = data.akamai_group.my_group.id
+  name                  = var.security_config.name
+  description           = try(var.security_config.description, null)
+  create_from_config_id = try(var.security_config.create_from_config_id, null)
+  create_from_version   = try(var.security_config.create_from_version, null)
+  hostname_list         = local.clean_hostname_config_map[var.security_config.name]
+  security_config       = var.security_config.config_settings
+}
+
+module "policy_creation" {
+  for_each                       = var.akamai_map.security_policy
+  source                         = "./modules/security-policy"
+  config_id                      = module.config_creation.config_id
+  policy_name                    = each.value.name
+  policy_prefix                  = try(each.value.policy_prefix, null)
+  default_settings               = each.value.default_settings
+  create_from_security_policy_id = try(each.value.create_from_security_policy_id, null)
+  security_policy                = each.value.security_policy
+}
+
+module "config_activation" {
+  depends_on          = [module.policy_creation, module.config_creation]
+  source              = "./modules/security-activation"
+  config_id           = module.config_creation.config_id
+  latest_version      = module.config_creation.config_version
+  activation_note     = try(var.security_config.activation_note, null)
+  support_team_emails = var.security_config.support_team_emails
+}
 
 /*
-Next iteration:
-
-create web security
-assign hosts into web Security
-
+Once the API and TF module is available to manage Site Shield, we can:
 create site shield
-assign properties into site shield
+assign properties into site shield dinamically.
 */

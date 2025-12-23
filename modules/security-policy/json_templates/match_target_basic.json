@@ -1,0 +1,13 @@
+{
+  "type": "website",
+  "configId": "${config_id}",
+  "defaultFile": "NO_MATCH",
+  "filePaths": [
+    "/*"
+  ],
+  "isNegativeFileExtensionMatch": false,
+  "isNegativePathMatch": false,
+  "securityPolicy": {
+    "policyId": "${security_policy_id}"
+  }
+}

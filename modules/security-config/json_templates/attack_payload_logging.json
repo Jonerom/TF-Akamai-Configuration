@@ -1,0 +1,10 @@
+{
+  "enabled": "${enabled}",
+  "override": false,
+  "requestBody": {
+    "type": "${request_body}"
+  },
+  "responseBody": {
+    "type": "${response_body}"
+  }
+}

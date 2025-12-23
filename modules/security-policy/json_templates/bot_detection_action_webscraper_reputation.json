@@ -1,0 +1,5 @@
+${jsonencode({
+    "action": "${action}",
+    "webScraperReputationSensitivity": "${sensitivity}"
+  })
+}

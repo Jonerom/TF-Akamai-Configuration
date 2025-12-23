@@ -1,0 +1,6 @@
+{
+  "name": "${name}",
+  "context": "${context}",
+  "sharedIpHandling": "${shared_ip_handling}",
+  "threshold": "${threshold}"
+}

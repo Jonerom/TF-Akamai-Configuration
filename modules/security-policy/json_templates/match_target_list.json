@@ -1,0 +1,15 @@
+${jsonencode({
+    "type": "${type}",
+    "configId": "${config_id}",
+    "defaultFile": "${default_file}",
+    "hostnames": "${hostname_list}",
+    "filePaths": [
+      "/*"
+    ],
+    "isNegativeFileExtensionMatch": false,
+    "isNegativePathMatch": false,
+    "securityPolicy": {
+      "policyId": "${security_policy_id}"
+    }
+  })
+}

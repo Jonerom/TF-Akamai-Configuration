@@ -1,0 +1,4 @@
+${jsonencode({
+    "customBotCategoryIds": "${custom_bot_category_ids_list}"
+  })
+}
