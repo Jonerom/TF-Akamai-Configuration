@@ -224,13 +224,14 @@ module "policy_creation" {
   security_policy                = each.value.security_policy
 }
 
-### Activation
-# module "config_activation" {
-#   depends_on     = [module.policy_creation, module.config_creation]
-#   source         = "./modules/akamai-validate-settings"
-#   config_id      = module.config_creation.config_id
-#   latest_version = module.config_creation.config_version
-# }
+module "config_activation" {
+  depends_on          = [module.policy_creation, module.config_creation]
+  source              = "./modules/security-activation"
+  config_id           = module.config_creation.config_id
+  latest_version      = module.config_creation.config_version
+  activation_note     = try(var.security_config.activation_note, null)
+  support_team_emails = var.security_config.support_team_emails
+}
 
 /*
 Once the API and TF module is available to manage Site Shield, we can:

@@ -51,7 +51,9 @@ variable "akamai_map" {
     # Setup of Web Security configuration main settings
     security_configuration = optional(object({
       name                  = string                           # Name of the Web Security configuration to be created
+      activation_note       = optional(string)                 # Activation note for the Property
       description           = optional(string)                 # Description of the Web Security configuration
+      support_team_emails   = list(string)                     # Email address(es) of the support team(s) for notifications related to the Property activations
       create_from_config_id = optional(string)                 # The configuration ID to create this configuration from
       create_from_version   = optional(number)                 # The version of the configuration to create this configuration
       config_settings = optional(object({                      # Establish configuration settings
