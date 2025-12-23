@@ -1,0 +1,12 @@
+{
+  "allowSampling": "${enabled}",
+  "cookies": {
+    "type": "${cookies}"
+  },
+  "customHeaders": {
+    "type": "${custom_type}"
+  },
+  "standardHeaders": {
+    "type": "${standard_type}"
+  }
+}

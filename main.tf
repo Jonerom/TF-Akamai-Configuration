@@ -1,6 +1,6 @@
 
 module "zone" {
-  for_each               = var.akamai_map.zone_configuration
+  for_each               = try(var.akamai_map.zone_configuration, {})
   source                 = "./modules/dns-zone"
   contract               = data.akamai_contract.my_contract.id
   group                  = data.akamai_group.my_group.id
@@ -33,7 +33,7 @@ locals {
   ])
 }
 module "non_property_records" {
-  for_each    = local.flattened_dns_records
+  for_each    = try(local.flattened_dns_records, {})
   source      = "./modules/dns-records"
   zone        = each.value.zone
   record      = each.value.record
@@ -197,7 +197,40 @@ Next iteration:
 
 create web security
 assign hosts into web Security
+*/
 
+
+module "config_creation" {
+  count                 = length(try(var.akamai_map.security_configuration, []))
+  source                = "./modules/akamai-security-config"
+  contract              = data.akamai_contract.my_contract.id
+  group                 = data.akamai_group.my_group.id
+  name                  = var.security_config.name
+  description           = try(var.security_config.description, null)
+  create_from_config_id = try(var.security_config.create_from_config_id, null)
+  create_from_version   = try(var.security_config.create_from_version, null)
+  hostname_list         = "" ### to be filled dynamically later ###
+  security_config       = var.security_config.config_settings
+}
+
+module "policy_creation" {
+  for_each        = var.akamai_map.security_policy
+  depends_on      = [module.config_creation]
+  source          = "./modules/akamai-security-policy"
+  config_id       = module.config_creation.config_id
+  security_policy = var.security_policy
+}
+
+### Activation
+# module "config_activation" {
+#   depends_on     = [module.policy_creation, module.config_creation]
+#   source         = "./modules/akamai-validate-settings"
+#   config_id      = module.config_creation.config_id
+#   latest_version = module.config_creation.config_version
+# }
+
+/*
+Once the API and TF module is available to manage Site Shield, we can:
 create site shield
-assign properties into site shield
+assign properties into site shield dinamically.
 */

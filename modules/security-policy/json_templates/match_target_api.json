@@ -1,0 +1,9 @@
+{
+  "type": "${type}",
+  "configId": "${config_id}",
+  "id": "${api_id}",
+  "name": "${api_name}",
+  "securityPolicy": {
+    "policyId": "${security_policy_id}"
+  }
+}

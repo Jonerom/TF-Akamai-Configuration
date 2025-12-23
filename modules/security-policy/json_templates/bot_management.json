@@ -1,0 +1,11 @@
+${jsonencode({
+    "enableBotManagement": "${enable_bot_management}",
+    "addAkamaiBotHeader": "${add_akamai_bot_header}",
+    "thirdPartyProxyServiceInUse": "${third_party_proxy_service_in_use}",
+    "removeBotManagementCookies": "${remove_bot_management_cookies}",
+    "enableActiveDetections": "${enable_active_detections}",
+    "enableBrowserValidation": "${enable_browser_validation}",
+    "includeTransactionalEndpointRequests": "${include_transactional_endpoint_requests}",
+    "includeTransactionalEndpointStatus": "${include_transactional_endpoint_status}"
+  })
+}
