@@ -202,7 +202,7 @@ assign hosts into web Security
 
 module "config_creation" {
   count                 = length(try(var.akamai_map.security_configuration, []))
-  source                = "./modules/akamai-security-config"
+  source                = "./modules/security-config"
   contract              = data.akamai_contract.my_contract.id
   group                 = data.akamai_group.my_group.id
   name                  = var.security_config.name
@@ -214,11 +214,14 @@ module "config_creation" {
 }
 
 module "policy_creation" {
-  for_each        = var.akamai_map.security_policy
-  depends_on      = [module.config_creation]
-  source          = "./modules/akamai-security-policy"
-  config_id       = module.config_creation.config_id
-  security_policy = var.security_policy
+  for_each                       = var.akamai_map.security_policy
+  source                         = "./modules/security-policy"
+  config_id                      = module.config_creation.config_id
+  policy_name                    = each.value.name
+  policy_prefix                  = try(each.value.policy_prefix, null)
+  default_settings               = each.value.default_settings
+  create_from_security_policy_id = try(each.value.create_from_security_policy_id, null)
+  security_policy                = each.value.security_policy
 }
 
 ### Activation
