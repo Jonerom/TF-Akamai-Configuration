@@ -191,14 +191,28 @@ module "property" {
   additional_json_rules                     = try(each.value.additional_json_rules, null)
 }
 
-
-/*
-Next iteration:
-
-create web security
-assign hosts into web Security
-*/
-
+# Generate the map of hostnames per Web Security configuration
+locals {
+  raw_hostname_list = flatten([
+    for prop_key, prop_value in try(var.akamai_map.property_configuration, {}) : [
+      for host_key, host_config in prop_value.host_configuration : [
+        for record in host_config.records : {
+          security_name = prop_value.web_security_name
+          full_hostname = record.name != "" ? "${record.name}.${host_config.zone}" : host_config.zone
+        }
+      ]
+    ]
+    if try(prop_value.web_security_name, null) != null
+  ])
+  hostname_config_map = {
+    for item in local.raw_hostname_list :
+    item.security_name => item.full_hostname...
+  }
+  clean_hostname_config_map = {
+    for sec_name, hostnames in local.hostname_config_map :
+    sec_name => distinct(hostnames)
+  }
+}
 
 module "config_creation" {
   count                 = length(try(var.akamai_map.security_configuration, []))
@@ -209,7 +223,7 @@ module "config_creation" {
   description           = try(var.security_config.description, null)
   create_from_config_id = try(var.security_config.create_from_config_id, null)
   create_from_version   = try(var.security_config.create_from_version, null)
-  hostname_list         = "" ### to be filled dynamically later ###
+  hostname_list         = local.clean_hostname_config_map[var.security_config.name]
   security_config       = var.security_config.config_settings
 }
 

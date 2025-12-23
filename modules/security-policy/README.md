@@ -1,6 +1,7 @@
 # security-policy
 
 Define and manage Akamai Application Security (AppSec) policies under a given configuration, including match targets (website/API), IP/Geo protections, DoS rate/slowpost controls, WAF modes and attack groups, bot management, reputation profiles, and logging overrides.
+By default, this module deploys a non-intrusive monitoring policy. It captures comprehensive traffic telemetry, enabling teams to assess security requirements and fine-tune rules before moving from 'Log' to 'Deny' mode.  
 
 ---
 

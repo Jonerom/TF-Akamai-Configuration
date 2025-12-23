@@ -279,7 +279,7 @@ variable "akamai_map" {
       activation_note     = optional(string) # Activation note for the Property
       custom_cp_name      = optional(string) # Name of the custom CP Code to be associated with the property. If not set, a new CP Code will be created
       ### Security Configurations ###
-      site_shield_name  = optional(string) # Name of the Site Shield to be associated with the Property, recomended for WAF activated properties
+      # site_shield_name  = optional(string) # Name of the Site Shield to be associated with the Property, recomended for WAF activated properties
       web_security_name = optional(string) # Name of the Web Security configuration to be associated with the Property
       ### Rule Configurations ###
       rule_format = optional(string) # Rule format for the Property. Possible values: 'latest' or see specific values: https://techdocs.akamai.com/terraform/docs/pm-ds-rule-formatsº
