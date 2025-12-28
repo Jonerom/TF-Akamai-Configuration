@@ -5,7 +5,7 @@ locals {
     for zone_key, zone_config in local.zone_sans :
     [
       for record_index, record in zone_config.records :
-      "${record.name}.${zone_config.zone_name}"
+      "${record.name}.${zone_config.zone}"
     ]
   ])
 }
@@ -48,10 +48,10 @@ resource "akamai_cps_dv_enrollment" "certificate" {
   certificate_chain_type = var.certificate_chain_type
   csr {
     preferred_trust_chain = try(var.csr.preferred_trust_chain, null)
-    country_code          = try(var.csr.country_code, var.organization.country_code)
+    country_code          = var.csr.country_code != null ? var.csr.country_code : var.organization.country_code
     state                 = try(var.csr.state, null)
-    city                  = try(var.csr.city, var.organization.city)
-    organization          = try(var.csr.organization, var.organization.name)
+    city                  = var.csr.city != null ? var.csr.city : var.organization.city
+    organization          = var.csr.organization != null ? var.csr.organization : var.organization.name
     organizational_unit   = try(var.csr.organizational_unit, null)
   }
   network_configuration {
@@ -76,60 +76,59 @@ resource "akamai_cps_dv_enrollment" "certificate" {
   }
 }
 
-# Flatten the map of DNS challenges from the certificate enrollment and create the combine them with zone info
+# Flatten the map of DNS challenges and the certificate enrollment using temp data to satisfy plan-time requirements
 locals {
   dns_challenges_map = {
     for san in akamai_cps_dv_enrollment.certificate.dns_challenges : san.domain => san
   }
-  dns_challenge_map_simple = var.zone != "" ? {
-    for domain_key, challenge_object in local.dns_challenges_map :
-    domain_key => {
-      full_path     = challenge_object.full_path
-      response_body = challenge_object.response_body
-    }
-  } : {}
   flattened_dns_records = merge([
     for zone_key, zone_config in local.zone_sans :
     {
       for record_index, record in zone_config.records :
       "${zone_config.zone}-${record_index}" => {
-        zone = zone_config.zone_name
-        san  = "${record.name}.${zone_config.zone_name}"
+        zone = zone_config.zone
+        san  = "${record.name}.${zone_config.zone}"
       }
     }
-  ])
-  dns_challenge_map_complex = {
+  ]...)
+  dns_challenge_map_simple = var.zone != "" ? {
     for key, record_info in local.flattened_dns_records :
     key => {
-      challenge = lookup(local.dns_challenges_map, record_info.san, null)
-      zone      = record_info.zone
+      challenge_data = lookup(local.dns_challenges_map, record_info.san, { full_path = "TBD", response_body = "TBD" })
     }
-    if lookup(local.dns_challenges_map, record_info.san, null) != null
-  }
+  } : {}
+
+  dns_challenge_map_complex = var.zone == "" ? {
+    for key, record_info in local.flattened_dns_records :
+    key => {
+      challenge_data = lookup(local.dns_challenges_map, record_info.san, { full_path = "TBD", response_body = "TBD" })
+      zone           = record_info.zone
+    }
+  } : {}
 }
 module "cert_txt_validation_complex" {
   for_each    = local.dns_challenge_map_complex
   source      = "../dns-records"
   zone        = each.value.zone
-  record      = each.value.full_path
+  record      = each.value.challenge_data.full_path
   type        = "TXT"
   ttl         = 60
-  target_list = ["${each.value.response_body}"]
+  target_list = ["${each.value.challenge_data.response_body}"]
 }
 module "cert_txt_validation_simple" {
   for_each    = local.dns_challenge_map_simple
   source      = "../dns-records"
   zone        = var.zone
-  record      = each.value.full_path
+  record      = each.value.challenge_data.full_path
   type        = "TXT"
   ttl         = 60
-  target_list = ["${each.value.response_body}"]
+  target_list = ["${each.value.challenge_data.response_body}"]
 }
 
 resource "time_sleep" "cert_txt_wait" {
   depends_on = [
-    akamai_dns_record.cert_txt_validation_simple,
-    akamai_dns_record.cert_txt_validation_complex,
+    module.cert_txt_validation_simple,
+    module.cert_txt_validation_complex,
   ]
   create_duration = "300s"
 }

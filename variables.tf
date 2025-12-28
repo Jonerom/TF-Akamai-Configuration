@@ -107,7 +107,7 @@ variable "akamai_map" {
       default_settings               = optional(bool)   # Assign default Akamai security policy settings or create a blank policy
       create_from_security_policy_id = optional(string) # The security policy ID to create this policy from
       policy_settings = optional(object({               # Establish policy settings
-        match_target = map(object({                     # Map of match targets to apply the policy to
+        match_target = optional(map(object({            # Map of match targets to apply the policy to
           # Each must contain a type and either the apis object block or the website object block
           type = optional(string, "website")                          # Type of match target, possible values are: website or api
           website = optional(object({                                 # Website match target settings (only for website type)
@@ -123,7 +123,7 @@ variable "akamai_map" {
             api_id   = optional(string) # API ID to match on
             api_name = optional(string) # API name to match on
           })))
-        }))
+        })))
         override_evasive_path         = optional(bool)   # Whether to override default configuration settings for evasive path matching
         evasive_path_match_enable     = optional(bool)   # Enable Evasive URL Request Matching if override_evasive_path is true
         override_request_body         = optional(bool)   # Whether to override default configuration settings for request body inspection
@@ -158,48 +158,48 @@ variable "akamai_map" {
         ip_network_lists = optional(object({ # Object containing IP network lists and action to apply
           ip_network_lists = list(string), action = string
         }))
-        exception_ip_network_lists = optional(list(string))  # List of exception IP network lists
-        ukraine_geo_control_action = optional(string)        # Action for Ukraine Geo Control, possible values are: alert, deny, none
-        dos_rate_protection_enable = optional(bool, true)    # Enable DoS Rate Protection
-        dos_rate_policy = optional(object({                  # DoS Rate Protection policy settings
-          ipv4_action           = optional(string)           # Action for IPv4 DoS Rate Protection, possible values are: deny, alert
-          ipv6_action           = optional(string)           # Action for IPv6 DoS Rate Protection, possible values are: deny, alert
-          file_path             = optional(string)           # File path for custom rate limiting settings
-          rate_policy_file_list = optional(list(string), []) # List of additional rate policy files to include
+        exception_ip_network_lists = optional(list(string)) # List of exception IP network lists
+        ukraine_geo_control_action = optional(string)       # Action for Ukraine Geo Control, possible values are: alert, deny, none
+        dos_rate_protection_enable = optional(bool, true)   # Enable DoS Rate Protection
+        dos_rate_policy = optional(object({                 # DoS Rate Protection policy settings
+          ipv4_action           = optional(string)          # Action for IPv4 DoS Rate Protection, possible values are: deny, alert
+          ipv6_action           = optional(string)          # Action for IPv6 DoS Rate Protection, possible values are: deny, alert
+          file_path             = optional(string)          # File path for custom rate limiting settings
+          rate_policy_file_list = optional(list(string))    # List of additional rate policy files to include
         }))
-        dos_slowpost_protection_enable    = optional(bool)             # Enable DoS Slow Post Protection
-        dos_slow_rate_action              = optional(string)           # Action for DoS Slow Rate Protection, possible values are: abort, alert
-        dos_slow_rate_threshold_rate      = optional(number)           # Threshold rate for DoS Slow Rate Protection
-        dos_slow_rate_threshold_period    = optional(number)           # Threshold period for DoS Slow Rate Protection
-        dos_duration_threshold_timeout    = optional(number)           # Duration threshold timeout for DoS Slow Post Protection
-        waf_protection_enable             = optional(bool)             # Enable Web Application Firewall
-        waf_mode                          = optional(string)           #  WAF mode, possible values are: ASE_AUTO / AAG = Akamai updated // ASE_MANUAL / KRS = manually updated
-        waf_attack_group_action_cmdi      = optional(string)           # Action for Command Injection attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_xss       = optional(string)           # Action for Cross-Site Scripting attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_lfi       = optional(string)           # Action for Local File Inclusion attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_rfi       = optional(string)           # Action for Remote File Inclusion attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_sql       = optional(string)           # Action for SQL Injection attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_to        = optional(string)           # Action for Outbound attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_wat       = optional(string)           # Action for Web Application Threats attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_wpla      = optional(string)           # Action for Platform attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_wpv       = optional(string)           # Action for Policy Violations attack group, possible values are: deny, alert, not used
-        waf_attack_group_action_wpra      = optional(string)           # Action for Protocol attack group, possible values are: deny, alert, not used
-        waf_penalty_box_enable            = optional(bool)             # Enable WAF Penalty Box
-        waf_penalty_box_action            = optional(string)           # Action for WAF Penalty Box, possible values are: deny, alert, not used
-        api_constraints_enable            = optional(bool)             # Enable API Constraints
-        reputation_protection_enable      = optional(bool)             # Enable Reputation Protection
-        reputation_profile_default        = optional(list(string), []) # List of default reputation profiles to include
-        reputation_profile_default_action = optional(string)           # Action for default reputation profiles, possible values are: alert, deny
-        reputation_profile = optional(list(object({                    # List of custom reputation profiles to include
-          name               = optional(string)                        # Name of the reputation profile
-          action             = optional(string)                        # Action for the reputation profile, possible values are: alert, deny
-          context            = optional(string)                        #  Context for the reputation profile, possible values are: WEBATCK, DOSATCK, WEBSCRP, SCANTL
-          shared_ip_handling = optional(string)                        # Shared IP handling for the reputation profile, possible values are: NON_SHARED, SHARED_ONLY, BOTH
-          threshold          = optional(string)                        # Threshold for the reputation profile
+        dos_slowpost_protection_enable    = optional(bool)         # Enable DoS Slow Post Protection
+        dos_slow_rate_action              = optional(string)       # Action for DoS Slow Rate Protection, possible values are: abort, alert
+        dos_slow_rate_threshold_rate      = optional(number)       # Threshold rate for DoS Slow Rate Protection
+        dos_slow_rate_threshold_period    = optional(number)       # Threshold period for DoS Slow Rate Protection
+        dos_duration_threshold_timeout    = optional(number)       # Duration threshold timeout for DoS Slow Post Protection
+        waf_protection_enable             = optional(bool)         # Enable Web Application Firewall
+        waf_mode                          = optional(string)       #  WAF mode, possible values are: ASE_AUTO / AAG = Akamai updated // ASE_MANUAL / KRS = manually updated
+        waf_attack_group_action_cmdi      = optional(string)       # Action for Command Injection attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_xss       = optional(string)       # Action for Cross-Site Scripting attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_lfi       = optional(string)       # Action for Local File Inclusion attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_rfi       = optional(string)       # Action for Remote File Inclusion attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_sql       = optional(string)       # Action for SQL Injection attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_to        = optional(string)       # Action for Outbound attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_wat       = optional(string)       # Action for Web Application Threats attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_wpla      = optional(string)       # Action for Platform attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_wpv       = optional(string)       # Action for Policy Violations attack group, possible values are: deny, alert, not used
+        waf_attack_group_action_wpra      = optional(string)       # Action for Protocol attack group, possible values are: deny, alert, not used
+        waf_penalty_box_enable            = optional(bool)         # Enable WAF Penalty Box
+        waf_penalty_box_action            = optional(string)       # Action for WAF Penalty Box, possible values are: deny, alert, not used
+        api_constraints_enable            = optional(bool)         # Enable API Constraints
+        reputation_protection_enable      = optional(bool)         # Enable Reputation Protection
+        reputation_profile_default        = optional(list(string)) # List of default reputation profiles to include
+        reputation_profile_default_action = optional(string)       # Action for default reputation profiles, possible values are: alert, deny
+        reputation_profile = optional(list(object({                # List of custom reputation profiles to include
+          name               = optional(string)                    # Name of the reputation profile
+          action             = optional(string)                    # Action for the reputation profile, possible values are: alert, deny
+          context            = optional(string)                    #  Context for the reputation profile, possible values are: WEBATCK, DOSATCK, WEBSCRP, SCANTL
+          shared_ip_handling = optional(string)                    # Shared IP handling for the reputation profile, possible values are: NON_SHARED, SHARED_ONLY, BOTH
+          threshold          = optional(string)                    # Threshold for the reputation profile
         })))
         client_forward_to_http_header                = optional(bool) # Enable Client IP forwarding to HTTP header
         client_forward_shared_ip_to_http_header_siem = optional(bool) # Enable Client IP forwarding for shared IPs to HTTP header for SIEM
-        bot_management_settings = object({                            # Bot Management settings
+        bot_management_settings = optional(object({                   # Bot Management settings
           enable_bot_management                   = optional(bool)    # Enable Bot Management
           add_akamai_bot_header                   = optional(bool)    # Add Akamai Bot header to requests
           third_party_proxy_service_in_use        = optional(bool)    # Indicate if a third-party proxy service is in use
@@ -208,14 +208,14 @@ variable "akamai_map" {
           enable_browser_validation               = optional(bool)    # Enable browser validation for Bot Management
           include_transactional_endpoint_requests = optional(bool)    # Include transactional endpoint requests in Bot Management
           include_transactional_endpoint_status   = optional(bool)    # Add Akamai Bot header to requests to all transactional endpoints
-        })
+        }))
         custom_bot_path = optional(string)           # Path to custom bot definitions
         custom_bot_category = optional(list(object({ # List of custom bot categories
           category_name = optional(string)           # Name of the custom bot category
           action        = optional(string)           # Action for the custom bot category, possible values are: monitor, tarpit, slow, deny
           bots          = optional(list(string))     # List of bots in the custom bot category
         })))
-        bot_category_action = object({                                # Akamai Bot category actions, possible values are: monitor, tarpit, slow, deny, delay, skip
+        bot_category_action = optional(object({                       # Akamai Bot category actions, possible values are: monitor, tarpit, slow, deny, delay, skip
           academic_or_research_bots                = optional(string) # Action for Academic or Research bots
           artificial_intelligence_ai_bots          = optional(string) # Action for Artificial Intelligence (AI) bots
           automated_shopping_cart_and_sniper_bots  = optional(string) # Action for Automated Shopping Cart and Sniper bots
@@ -234,8 +234,8 @@ variable "akamai_map" {
           social_media_or_blog_bots                = optional(string) # Action for Social Media or Blog bots
           web_archiver_bots                        = optional(string) # Action for Web Archiver bots
           web_search_engine_bots                   = optional(string) # Action for Web Search Engine bots
-        })
-        bot_detection_action = object({                              # Akamai Bot transparent detection actions, possible values are: monitor, tarpit, slow, deny, delay, skip
+        }))
+        bot_detection_action = optional(object({                     # Akamai Bot transparent detection actions, possible values are: monitor, tarpit, slow, deny, delay, skip
           impersonators_of_known_bots             = optional(string) # Action for Impersonators of Known bots
           development_frameworks                  = optional(string) # Action for Development Frameworks
           http_libraries                          = optional(string) # Action for HTTP Libraries
@@ -253,7 +253,7 @@ variable "akamai_map" {
           client_disabled_javascript              = optional(string) # Action for Client Disabled Javascript
           javascript_fingerprint_anomaly          = optional(string) # Action for Javascript Fingerprint Anomaly
           javascript_fingerprint_not_received     = optional(string) # Action for Javascript Fingerprint Not Received
-        })
+        }))
         inject_javascript = optional(string) # JavaScript injection timing, possible values are: AROUND_PROTECTED_OPERATIONS, NEVER, ALWAYS
       }))
     })))
@@ -288,21 +288,21 @@ variable "akamai_map" {
         comments    = optional(string)
         origin_type = string # Origin type for the default origin behavior, possible values: CUSTOMER, NET_STORAGE or AKAMAI_OBJECT_STORAGE
         # CUSTOMER origin type values
-        forward_host_header           = optional(string) # Sets the Host header sent to the origin server, possible values: REQUEST_HOST_HEADER, ORIGIN_HOSTNAME or CUSTOM
-        custom_forward_host_header    = optional(string) # Host header value when forward_host_header is set to CUSTOM
-        cache_key_hostname            = optional(string) # Hostname used in the cache key, possible values: REQUEST_HOST_HEADER or ORIGIN_HOSTNAME
-        ip_version                    = optional(string) # IP version used to connect to the origin, possible values: IPV4, IPV6 or DUAL_STACK
-        compress                      = optional(bool)   # Flag to enable gzip compression between Akamai and the origin
-        enable_true_client_ip         = optional(bool)   # Flag to enable True-Client-IP header to be sent to the origin
-        true_client_ip_header         = optional(string) # Name of the True-Client-IP header sent to the origin when enable_true_client_ip is true
-        true_client_ip_client_setting = optional(bool)   # Flag to enable client setting for True-Client-IP header when enable_true_client_ip is true
-        http_port                     = optional(number) # Origin HTTP port
-        https_port                    = optional(number) # Origin HTTPS port
-        min_tls_version               = optional(string) # Minimum TLS version for HTTPS connections to the origin, possible values: TLSV1_1, TLSV1_2, TLSV1_3 or DYNAMIC
-        origin_sni                    = optional(bool)   # Flag to enable SNI for HTTPS connections to the origin
-        verification_mode             = optional(string) # Origin certificate verification mode, possible values: PLATFORM_SETTINGS, THIRD_PARTY or CUSTOM
-        custom_valid_cn_values        = optional(string) # Custom common name values for origin certificate verification when verification_mode is CUSTOM
-        origin_certs_to_honor         = optional(string) # Origin certificates to honor when verification_mode is CUSTOM, possible values: COMBO (all), STANDARD_​CERTIFICATE_​AUTHORITIES, CUSTOM_​CERTIFICATE_​AUTHORITIES	 or CUSTOM_​CERTIFICATES
+        forward_host_header           = optional(string)       # Sets the Host header sent to the origin server, possible values: REQUEST_HOST_HEADER, ORIGIN_HOSTNAME or CUSTOM
+        custom_forward_host_header    = optional(string)       # Host header value when forward_host_header is set to CUSTOM
+        cache_key_hostname            = optional(string)       # Hostname used in the cache key, possible values: REQUEST_HOST_HEADER or ORIGIN_HOSTNAME
+        ip_version                    = optional(string)       # IP version used to connect to the origin, possible values: IPV4, IPV6 or DUAL_STACK
+        compress                      = optional(bool)         # Flag to enable gzip compression between Akamai and the origin
+        enable_true_client_ip         = optional(bool)         # Flag to enable True-Client-IP header to be sent to the origin
+        true_client_ip_header         = optional(string)       # Name of the True-Client-IP header sent to the origin when enable_true_client_ip is true
+        true_client_ip_client_setting = optional(bool)         # Flag to enable client setting for True-Client-IP header when enable_true_client_ip is true
+        http_port                     = optional(number)       # Origin HTTP port
+        https_port                    = optional(number)       # Origin HTTPS port
+        min_tls_version               = optional(string)       # Minimum TLS version for HTTPS connections to the origin, possible values: TLSV1_1, TLSV1_2, TLSV1_3 or DYNAMIC
+        origin_sni                    = optional(bool)         # Flag to enable SNI for HTTPS connections to the origin
+        verification_mode             = optional(string)       # Origin certificate verification mode, possible values: PLATFORM_SETTINGS, THIRD_PARTY or CUSTOM
+        custom_valid_cn_values        = optional(list(string)) # Custom common name values for origin certificate verification when verification_mode is CUSTOM
+        origin_certs_to_honor         = optional(string)       # Origin certificates to honor when verification_mode is CUSTOM, possible values: COMBO (all), STANDARD_​CERTIFICATE_​AUTHORITIES, CUSTOM_​CERTIFICATE_​AUTHORITIES	 or CUSTOM_​CERTIFICATES
         # NET_STORAGE origin type values
         net_storage = optional(object({
           account_id   = string           # NetStorage account ID
@@ -334,7 +334,7 @@ variable "akamai_map" {
       # General configuration for the certificate
       # A name is mandatory for certificate creation,other values, if not set, default behavior will be used
       certificate_general_configuration = optional(object({
-        certificate_name                      = (string)         # Name of certificate to be created, mandatory for WAF enabled properties
+        certificate_name                      = string           # Name of certificate to be created, mandatory for WAF enabled properties
         acknowledge_pre_verification_warnings = optional(bool)   # Flag to acknowledge pre-verification warnings during certificate enrollment
         secure_network                        = optional(string) # Flag to indicate whether to enable PCI compliant Secure Network for the certificate
         sni_only                              = optional(bool)   # Flag to indicate whether to enable SNI only for the certificate
@@ -397,7 +397,7 @@ variable "akamai_map" {
 # Mandatory for certificate creation
 variable "organization_details" {
   description = "Organization details for certificate creation if required"
-  type = optional(object({
+  type = object({
     ## Organization details ##
     organization = object({
       name             = string                 # Organization name
@@ -447,6 +447,6 @@ variable "organization_details" {
       organization          = optional(string, null) # CSR organization
       organizational_unit   = optional(string, null) # CSR organizational unit
     }))
-  }))
+  })
   default = null
 }

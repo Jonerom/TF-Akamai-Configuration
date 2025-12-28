@@ -10,20 +10,24 @@ variable "policy_name" {
 
 variable "policy_prefix" {
   description = "Prefix for the security policy name, value has to be 4 chars long"
-  type        = optional(string)
+  type        = string
   validation {
-    condition     = can(regex("^[a-zA-Z0-9]{4}$", var.policy_prefix))
+    condition     = can(regex("^[a-zA-Z0-9]{4}$", var.policy_prefix)) || var.policy_prefix == null
     error_message = "The policy_prefix must be exactly 4 alphanumeric characters (letters and numbers only)."
   }
+  default = null
 }
 
 variable "default_settings" {
-  type        = optional(bool, false)
+  type        = bool
   description = "Assign default Akamai security policy settings or create a blank policy"
+  default     = false
 }
+
 variable "create_from_security_policy_id" {
-  type        = optional(string)
+  type        = string
   description = "ID of an existing security policy to copy from"
+  default     = null
 }
 
 variable "security_policy" {
@@ -31,24 +35,24 @@ variable "security_policy" {
   type = object({
     match_target = map(object({ # Map of match targets to apply the policy to
       # Each must contain a type and either the apis object block or the website object block
-      type = optional(string, "website")                          # Type of match target, possible values are: website or api
-      website = optional(object({                                 # Website match target settings (only for website type)
-        default_file                     = optional(string)       # Rule to match on paths, possible values are: NO_MATCH (custom), BASE_MATCH (top-level w/ trailing slash)or RECURSIVE_MATCH (all w/ trailing slash)
-        file_extension_list              = optional(list(string)) # List of file extensions to match on
-        file_path_list                   = optional(list(string)) # List of file paths to match on
-        hostname_list                    = optional(list(string)) # List of hostnames to match on
-        is_negative_file_extension_match = optional(string)       # File extension matching query, possible values are: true = NOT match // false = match
-        is_negative_path_match           = optional(string)       # File path matching query, possible values are: true = NOT match // false = match
-        bypass_network_list              = optional(string)       # Network list to bypass the match target
+      type = optional(string, "website")                                # Type of match target, possible values are: website or api
+      website = optional(object({                                       # Website match target settings (only for website type)
+        default_file                     = optional(string, "NO_MATCH") # Rule to match on paths, possible values are: NO_MATCH (custom), BASE_MATCH (top-level w/ trailing slash)or RECURSIVE_MATCH (all w/ trailing slash)
+        file_extension_list              = optional(list(string), [])   # List of file extensions to match on
+        file_path_list                   = optional(list(string), [])   # List of file paths to match on
+        hostname_list                    = optional(list(string), [])   # List of hostnames to match on
+        is_negative_file_extension_match = optional(string)             # File extension matching query, possible values are: true = NOT match // false = match
+        is_negative_path_match           = optional(string)             # File path matching query, possible values are: true = NOT match // false = match
+        bypass_network_list              = optional(string)             # Network list to bypass the match target
       }))
       apis = optional(list(object({ # List of APIs to match on (only for API type)
         api_id   = optional(string) # API ID to match on
         api_name = optional(string) # API name to match on
-      })))
+      })), [])
     }))
     override_evasive_path         = optional(bool, false) # Whether to override default configuration settings for evasive path matching
     evasive_path_match_enable     = optional(bool)        # Enable Evasive URL Request Matching if override_evasive_path is true
-    override_request_body         = optional(bool)        # Whether to override default configuration settings for request body inspection
+    override_request_body         = optional(bool, false) # Whether to override default configuration settings for request body inspection
     request_body_inspection_limit = optional(string)      # Request size inspection limit in KB, possible values: default, 8, 16, 32 if override_request_body is true
     http_logging = object({                               # Override default HTTP header data logging configuration
       override      = optional(bool, false)               # Whether to override the default HTTP logging settings
@@ -88,7 +92,7 @@ variable "security_policy" {
       ipv6_action           = optional(string)            # Action for IPv6 DoS Rate Protection, possible values are: deny, alert
       file_path             = optional(string)            # File path for custom rate limiting settings
       rate_policy_file_list = optional(list(string), [])  # List of additional rate policy files to include
-    }))
+    }), {})
     dos_slowpost_protection_enable    = optional(bool, true)         # Enable DoS Slow Post Protection
     dos_slow_rate_action              = optional(string, "abort")    # Action for DoS Slow Rate Protection, possible values are: abort, alert
     dos_slow_rate_threshold_rate      = optional(number, 10)         # Threshold rate for DoS Slow Rate Protection
@@ -118,7 +122,7 @@ variable "security_policy" {
       context            = optional(string)                          #  Context for the reputation profile, possible values are: WEBATCK, DOSATCK, WEBSCRP, SCANTL
       shared_ip_handling = optional(string)                          # Shared IP handling for the reputation profile, possible values are: NON_SHARED, SHARED_ONLY, BOTH
       threshold          = optional(string)                          # Threshold for the reputation profile
-    })))
+    })), [])
     client_forward_to_http_header                = optional(bool, false) # Enable Client IP forwarding to HTTP header
     client_forward_shared_ip_to_http_header_siem = optional(bool, false) # Enable Client IP forwarding for shared IPs to HTTP header for SIEM
     bot_management_settings = object({                                   # Bot Management settings
@@ -136,7 +140,7 @@ variable "security_policy" {
       category_name = optional(string)                           # Name of the custom bot category
       action        = optional(string)                           # Action for the custom bot category, possible values are: monitor, tarpit, slow, deny
       bots          = optional(list(string))                     # List of bots in the custom bot category
-    })))
+    })), [])
     bot_category_action = object({                                           # Akamai Bot category actions, possible values are: monitor, tarpit, slow, deny, delay, skip
       academic_or_research_bots                = optional(string, "monitor") # Action for Academic or Research bots
       artificial_intelligence_ai_bots          = optional(string, "monitor") # Action for Artificial Intelligence (AI) bots
@@ -178,4 +182,105 @@ variable "security_policy" {
     })
     inject_javascript = optional(string, "AROUND_PROTECTED_OPERATIONS") # JavaScript injection timing, possible values are: AROUND_PROTECTED_OPERATIONS, NEVER, ALWAYS
   })
+  default = {
+    match_target = {
+      default = {
+        type = "website"
+        website = {
+          default_file = "NO_MATCH"
+        }
+      }
+    }
+    override_evasive_path = false
+    override_request_body = false
+    http_logging = {
+      override = false
+    }
+    attack_payload_logging = {
+      override = "false"
+    }
+    pragma_header = {
+      override = "false"
+    }
+    ip_geo_protection_enable                     = true
+    ip_geo_mode                                  = "allow"
+    ukraine_geo_control_action                   = "none"
+    dos_rate_protection_enable                   = true
+    dos_slowpost_protection_enable               = true
+    dos_slow_rate_action                         = "abort"
+    dos_slow_rate_threshold_rate                 = 10
+    dos_slow_rate_threshold_period               = 60
+    waf_protection_enable                        = true
+    waf_mode                                     = "ASE_AUTO"
+    waf_attack_group_action_cmdi                 = "deny"
+    waf_attack_group_action_xss                  = "deny"
+    waf_attack_group_action_lfi                  = "deny"
+    waf_attack_group_action_rfi                  = "deny"
+    waf_attack_group_action_sql                  = "deny"
+    waf_attack_group_action_to                   = "deny"
+    waf_attack_group_action_wat                  = "deny"
+    waf_attack_group_action_wpla                 = "deny"
+    waf_attack_group_action_wpv                  = "deny"
+    waf_attack_group_action_wpra                 = "deny"
+    waf_penalty_box_enable                       = true
+    waf_penalty_box_action                       = "deny"
+    api_constraints_enable                       = false
+    reputation_protection_enable                 = true
+    reputation_profile_default                   = []
+    reputation_profile_default_action            = "alert"
+    client_forward_to_http_header                = false
+    client_forward_shared_ip_to_http_header_siem = false
+    bot_management_settings = {
+      enable_bot_management                   = true
+      add_akamai_bot_header                   = false
+      third_party_proxy_service_in_use        = true
+      remove_bot_management_cookies           = true
+      enable_active_detections                = true
+      enable_browser_validation               = true
+      include_transactional_endpoint_requests = false
+      include_transactional_endpoint_status   = false
+    }
+    custom_bot_path = "json_files/custom_bots"
+    bot_category_action = {
+      academic_or_research_bots                = "monitor"
+      artificial_intelligence_ai_bots          = "monitor"
+      automated_shopping_cart_and_sniper_bots  = "monitor"
+      business_intelligence_bots               = "monitor"
+      ecommerce_search_engine_bots             = "monitor"
+      enterprise_data_aggregator_bots          = "monitor"
+      financial_account_aggregator_bots        = "monitor"
+      financial_services_bots                  = "monitor"
+      job_search_engine_bots                   = "monitor"
+      media_or_entertainment_search_bots       = "monitor"
+      news_aggregator_bots                     = "monitor"
+      online_advertising_bots                  = "monitor"
+      rss_feed_reader_bots                     = "monitor"
+      seo_analytics_or_marketing_bots          = "monitor"
+      site_monitoring_and_web_development_bots = "monitor"
+      social_media_or_blog_bots                = "monitor"
+      web_archiver_bots                        = "monitor"
+      web_search_engine_bots                   = "monitor"
+    }
+    bot_detection_action = {
+      impersonators_of_known_bots             = "tarpit"
+      development_frameworks                  = "monitor"
+      http_libraries                          = "monitor"
+      web_services_libraries                  = "tarpit"
+      open_source_crawlers_scraping_platforms = "tarpit"
+      headless_browsers_automation_tools      = "monitor"
+      declared_bots                           = "monitor"
+      aggressive_web_crawlers                 = "monitor"
+      browser_impersonator                    = "monitor"
+      webscraper_reputation_action            = "slow"
+      webscraper_reputation_sensitivity       = 4
+      cookie_integrity_failed                 = "tarpit"
+      session_validation_action               = "monitor"
+      session_validation_sensitivity          = "MEDIUM"
+      client_disabled_javascript              = "tarpit"
+      javascript_fingerprint_anomaly          = "monitor"
+      javascript_fingerprint_not_received     = "monitor"
+    }
+    inject_javascript = "AROUND_PROTECTED_OPERATIONS"
+  }
+  nullable = false
 }

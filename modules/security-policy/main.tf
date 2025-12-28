@@ -37,14 +37,14 @@ resource "akamai_appsec_match_target" "match_target" {
 }
 ### Override and establish Evasive URL Request Matching (Security Policy Details -> Advanced Settings -> Inspection)
 resource "akamai_appsec_advanced_settings_evasive_path_match" "evasive_path" {
-  count              = var.security_policy.override_evasive_path ? 1 : 0
+  count              = var.security_policy.override_evasive_path == true ? 1 : 0
   config_id          = var.config_id
   security_policy_id = akamai_appsec_security_policy.security_policy.security_policy_id
   enable_path_match  = var.security_policy.evasive_path_match_enable
 }
 ### Override and establish Request size inspection limit (Security Policy Details -> Advanced Settings -> Inspection)
 resource "akamai_appsec_advanced_settings_request_body" "request_body" {
-  count                                  = var.security_policy.override_request_body ? 1 : 0
+  count                                  = var.security_policy.override_request_body == true ? 1 : 0
   config_id                              = var.config_id
   security_policy_id                     = akamai_appsec_security_policy.security_policy.security_policy_id
   request_body_inspection_limit          = var.security_policy.request_body_inspection_limit
@@ -52,7 +52,7 @@ resource "akamai_appsec_advanced_settings_request_body" "request_body" {
 }
 ### Override and establish HTTP header logging (Security Policy Details -> Advanced Settings -> Logging)
 resource "akamai_appsec_advanced_settings_logging" "http_logging" {
-  count              = var.security_policy.http_logging.override ? 1 : 0
+  count              = var.security_policy.http_logging.override == true ? 1 : 0
   config_id          = var.config_id
   security_policy_id = akamai_appsec_security_policy.security_policy.security_policy_id
   logging = templatefile("${path.module}/json_templates/http_logging.json", {
@@ -65,7 +65,7 @@ resource "akamai_appsec_advanced_settings_logging" "http_logging" {
 }
 ### Override and establish Attack payload logging (Security Policy Details -> Advanced Settings -> Logging)
 resource "akamai_appsec_advanced_settings_attack_payload_logging" "attack_payload_logging" {
-  count              = var.security_policy.attack_payload_logging.override ? 1 : 0
+  count              = var.security_policy.attack_payload_logging.override == true ? 1 : 0
   config_id          = var.config_id
   security_policy_id = akamai_appsec_security_policy.security_policy.security_policy_id
   attack_payload_logging = templatefile("${path.module}/json_templates/attack_payload_logging.json", {
@@ -77,7 +77,7 @@ resource "akamai_appsec_advanced_settings_attack_payload_logging" "attack_payloa
 }
 ## Override and establish Strip Pragma Debug Headers (Security Policy Details -> Advanced Settings -> Platform Security)
 resource "akamai_appsec_advanced_settings_pragma_header" "pragma_header" {
-  count              = var.security_policy.pragma_header.override ? 1 : 0
+  count              = var.security_policy.pragma_header.override == true ? 1 : 0
   config_id          = var.config_id
   security_policy_id = akamai_appsec_security_policy.security_policy.security_policy_id
   pragma_header = templatefile("${path.module}/json_templates/pragma_header.json", {

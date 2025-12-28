@@ -15,3 +15,10 @@ terraform {
   }
   required_version = ">= 1.0"
 }
+
+provider "akamai" {
+  edgerc         = "~/.edgerc"
+  config_section = "demo"
+}
+provider "random" {}
+provider "time" {}

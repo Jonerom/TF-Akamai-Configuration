@@ -62,7 +62,7 @@ resource "akamai_appsec_siem_settings" "siem_settings" {
   config_id                       = akamai_appsec_configuration.security_config.config_id
   enable_siem                     = var.security_config.siem_settings_enable
   enable_for_all_policies         = var.security_config.siem_enable_for_all_policies
-  security_policy_ids             = try(var.security_config.siem_security_policy_ids, null)
+  security_policy_ids             = try(var.security_config.siem_security_policy_ids, [])
   siem_id                         = var.security_config.siem_id
   include_ja4_fingerprint_to_siem = try(var.security_config.siem_include_ja4_fingerprint, null)
   exceptions                      = try(var.security_config.siem_exception_list, null)
