@@ -226,7 +226,6 @@ variable "security_policy" {
     waf_penalty_box_action                       = "deny"
     api_constraints_enable                       = false
     reputation_protection_enable                 = true
-    reputation_profile_default                   = []
     reputation_profile_default_action            = "alert"
     client_forward_to_http_header                = false
     client_forward_shared_ip_to_http_header_siem = false
