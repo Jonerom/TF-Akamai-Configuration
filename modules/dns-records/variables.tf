@@ -17,6 +17,7 @@ variable "ttl" {
   description = "value for DNS record TTL (time to live) in seconds, default is 30 minutes445"
   type        = number
   default     = 1800
+  nullable    = false
 }
 
 variable "target_list" {

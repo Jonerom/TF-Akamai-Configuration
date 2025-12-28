@@ -1,4 +1,4 @@
-resource "akamai_appsec_activations" "my-activation" {
+resource "akamai_appsec_activations" "staging_activation" {
   config_id           = var.config_id
   version             = var.latest_version
   network             = "STAGING"
@@ -6,7 +6,7 @@ resource "akamai_appsec_activations" "my-activation" {
   notification_emails = var.support_team_emails
 }
 
-resource "akamai_appsec_activations" "my-activation" {
+resource "akamai_appsec_activations" "prod_activation" {
   config_id           = var.config_id
   version             = var.latest_version
   network             = "PRODUCTION"

@@ -148,7 +148,7 @@ Pair this with:
 | Path | Required fields | Notes |
 |---|---|---|
 | Simple SANs | zone (string), sans (list(string)) | Provide SAN FQDNs that live under the specified zone; CPS will emit DNS validation details accordingly. |
-| Complex SANs | zone_sans_map (map(object({ zone_name = string, records = list(object({ name = string })) }))) | Supports multiple zones; each entry lists record names to validate under the given zone_name. Must contain at least one entry. |
+| Complex SANs | zone_sans_map (map(object({ zone_ = string, records = list(object({ name = string })) }))) | Supports multiple zones; each entry lists record names to validate under the given zone. Must contain at least one entry. |
 
 ---
 

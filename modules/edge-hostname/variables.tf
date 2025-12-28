@@ -22,12 +22,14 @@ variable "edge_hostname_type" {
   description = "Edge Hostname type as per ceritificate type, possible values: enhanced, standard, shared or non-tls"
   type        = string
   default     = "enhanced"
+  nullable    = false
 }
 
 variable "ip_behavior" {
   description = "IP behavior for the Edge Hostname, possible values: IPV_4 or IPV6_COMPLIANCE / IPV6_PERFORMANCE"
   type        = string
   default     = "IPV_4"
+  nullable    = false
 }
 
 variable "ttl" {

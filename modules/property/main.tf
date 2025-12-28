@@ -52,7 +52,7 @@ resource "akamai_property" "property" {
       cname_to               = var.edge_hostname
       cert_provisioning_type = hostnames.value.config.cert_provisioning_type
       dynamic "ccm_certificates" {
-        for_each = hostnames.value.config.ccm_certificates != null ? hostnames.value.config.ccm_certificates : []
+        for_each = hostnames.value.config.ccm_certificates != null ? hostnames.value.config.ccm_certificates : {}
         content {
           ecdsa_cert_id = ccm_certificates.value.type == "ecdsa" ? ccm_certificates.value.id : null
           rsa_cert_id   = ccm_certificates.value.type == "rsa" ? ccm_certificates.value.id : null
@@ -105,17 +105,17 @@ resource "akamai_property_activation" "prod_activation" {
 
 module "shield_records" {
   for_each    = try(local.flattened_waf_dns_records, {})
-  source      = "./modules/dns-records"
+  source      = "../dns-records"
   zone        = each.value.zone
   record      = "${random_string.shield_prefix[each.key].result}-${each.value.name}.${each.value.zone}"
   type        = "A"
-  target_list = each.value.config.records.targets
+  target_list = each.value.config.targets
   ttl         = try(each.value.config.ttl, null)
 }
 
 module "waf_records" {
   for_each    = try(local.flattened_waf_dns_records, {})
-  source      = "./modules/dns-records"
+  source      = "../dns-records"
   zone        = each.value.zone
   record      = each.value.name != "" ? "${each.value.name}.${each.value.zone}" : each.value.zone
   type        = each.value.name != "" ? "CNAME" : "AKAMAICDN"
@@ -125,7 +125,7 @@ module "waf_records" {
 
 module "records" {
   for_each    = try(local.flattened_dns_records, {})
-  source      = "./modules/dns-records"
+  source      = "../dns-records"
   zone        = each.value.zone
   record      = each.value.name != "" ? "${each.value.name}.${each.value.zone}" : each.value.zone
   type        = each.value.name != "" ? each.value.type : "AKAMAICDN"
