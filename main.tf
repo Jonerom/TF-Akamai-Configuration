@@ -1,11 +1,9 @@
 
 module "zone" {
-  for_each = try(var.akamai_map.zone_configuration, {})
-  source   = "./modules/dns-zone"
-  contract = "C-0N7RAC7"
-  group    = "G-R0UP"
-  # contract               = data.akamai_contract.my_contract.id
-  # group                  = data.akamai_group.my_group.id
+  for_each               = try(var.akamai_map.zone_configuration, {})
+  source                 = "./modules/dns-zone"
+  contract               = data.akamai_contract.my_contract.id
+  group                  = data.akamai_group.my_group.id
   zone                   = each.value.zone_name
   type                   = try(each.value.type, null)
   sns                    = try(each.value.sns, null)
@@ -46,12 +44,10 @@ module "non_property_records" {
 }
 
 module "custom_cp_code" {
-  for_each = var.akamai_map.custom_content_provider_configuration != null ? var.akamai_map.custom_content_provider_configuration : {}
-  source   = "./modules/cp-code"
-  contract = "C-0N7RAC7"
-  group    = "G-R0UP"
-  # contract               = data.akamai_contract.my_contract.id
-  # group                  = data.akamai_group.my_group.id
+  for_each   = var.akamai_map.custom_content_provider_configuration != null ? var.akamai_map.custom_content_provider_configuration : {}
+  source     = "./modules/cp-code"
+  contract   = data.akamai_contract.my_contract.id
+  group      = data.akamai_group.my_group.id
   name       = each.value.cp_name
   product_id = each.value.product_id
   timeout    = try(each.value.timeout, null)
@@ -67,12 +63,10 @@ locals {
   }
 }
 module "zone_cp_code" {
-  for_each = try(local.new_cp_property_config, {})
-  source   = "./modules/cp-code"
-  contract = "C-0N7RAC7"
-  group    = "G-R0UP"
-  # contract               = data.akamai_contract.my_contract.id
-  # group                  = data.akamai_group.my_group.id
+  for_each   = try(local.new_cp_property_config, {})
+  source     = "./modules/cp-code"
+  contract   = data.akamai_contract.my_contract.id
+  group      = data.akamai_group.my_group.id
   name       = each.value.property_name
   product_id = each.value.product_id
   timeout    = try(each.value.timeout, null)
@@ -103,10 +97,9 @@ locals {
 }
 
 module "certificate" {
-  for_each = try(local.waf_property_map, {})
-  source   = "./modules/certificate-dv"
-  contract = "C-0N7RAC7"
-  # contract                              = data.akamai_contract.my_contract.id
+  for_each                              = try(local.waf_property_map, {})
+  source                                = "./modules/certificate-dv"
+  contract                              = data.akamai_contract.my_contract.id
   name                                  = each.value.certificate_general_configuration.certificate_name
   zone_sans_map                         = each.value.host_configuration
   acknowledge_pre_verification_warnings = try(each.value.certificate_general_configuration.acknowledge_pre_verification_warnings, null)
@@ -125,12 +118,10 @@ module "certificate" {
 }
 
 module "edge_hostname" {
-  for_each = try(local.waf_property_map, {})
-  source   = "./modules/edge-hostname"
-  contract = "C-0N7RAC7"
-  group    = "G-R0UP"
-  # contract               = data.akamai_contract.my_contract.id
-  # group                  = data.akamai_group.my_group.id
+  for_each                  = try(local.waf_property_map, {})
+  source                    = "./modules/edge-hostname"
+  contract                  = data.akamai_contract.my_contract.id
+  group                     = data.akamai_group.my_group.id
   product_id                = each.value.product_id
   hostname                  = "${each.value.property_name}-${try(each.value.edge_hostname_configuration.hostname_affix, null)}"
   edge_hostname_type        = try(each.value.edge_hostname_configuration.type, null)
@@ -143,12 +134,10 @@ module "edge_hostname" {
 }
 
 module "waf_property" {
-  for_each = try(local.waf_property_map, {})
-  source   = "./modules/property"
-  contract = "C-0N7RAC7"
-  group    = "G-R0UP"
-  # contract               = data.akamai_contract.my_contract.id
-  # group                  = data.akamai_group.my_group.id
+  for_each                                  = try(local.waf_property_map, {})
+  source                                    = "./modules/property"
+  contract                                  = data.akamai_contract.my_contract.id
+  group                                     = data.akamai_group.my_group.id
   name                                      = each.value.property_name
   support_team_emails                       = each.value.support_team_emails
   rule_format                               = try(each.value.rule_format, null)
@@ -181,12 +170,10 @@ locals {
 }
 
 module "property" {
-  for_each = try(local.property_map, {})
-  source   = "./modules/property"
-  contract = "C-0N7RAC7"
-  group    = "G-R0UP"
-  # contract               = data.akamai_contract.my_contract.id
-  # group                  = data.akamai_group.my_group.id
+  for_each                                  = try(local.property_map, {})
+  source                                    = "./modules/property"
+  contract                                  = data.akamai_contract.my_contract.id
+  group                                     = data.akamai_group.my_group.id
   name                                      = each.value.property_name
   support_team_emails                       = each.value.support_team_emails
   rule_format                               = try(each.value.rule_format, null)
@@ -229,12 +216,10 @@ locals {
 }
 
 module "config_creation" {
-  count    = length(try(var.akamai_map.security_configuration, []))
-  source   = "./modules/security-config"
-  contract = "C-0N7RAC7"
-  group    = "G-R0UP"
-  # contract               = data.akamai_contract.my_contract.id
-  # group                  = data.akamai_group.my_group.id
+  count                 = length(try(var.akamai_map.security_configuration, []))
+  source                = "./modules/security-config"
+  contract              = data.akamai_contract.my_contract.id
+  group                 = data.akamai_group.my_group.id
   name                  = var.akamai_map.security_configuration.name
   description           = try(var.akamai_map.security_configuration.description, null)
   create_from_config_id = try(var.akamai_map.security_configuration.create_from_config_id, null)
@@ -253,7 +238,7 @@ module "policy_creation" {
   create_from_security_policy_id = try(each.value.create_from_security_policy_id, null)
   security_policy                = try(each.value.policy_settings, null)
 }
-/*
+
 module "config_activation" {
   depends_on          = [module.policy_creation, module.config_creation]
   source              = "./modules/security-activation"
