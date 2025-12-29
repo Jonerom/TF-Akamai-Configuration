@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,7 +39,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not resolve edgerc path: %v", err)
 	}
-	conf, err := edgegrid.Init(fullPath, *section)
+	conf, err := edgegrid.New(
+		edgegrid.WithFile(fullPath),
+		edgegrid.WithSection(*section),
+	)
 	if err != nil {
 		log.Fatalf("Failed to load .edgerc credentials from %s (section: %s): %v", fullPath, *section, err)
 	}
@@ -73,19 +75,15 @@ func main() {
 // Support Functions
 
 // checkExists fetches the list and searches for the Edge Hostname target
-func checkExists(conf edgegrid.Config, target string) bool {
-	apiURL := url.URL{
-		Scheme: "https",
-		Host:   conf.Host,
-		Path:   "/config-dns/v2/data/edgehostnames",
-	}
-	req, err := http.NewRequest(http.MethodGet, apiURL.String(), nil)
+func checkExists(conf *edgegrid.Config, target string) bool {
+	reqURL := fmt.Sprintf("https://%s%s", conf.Host, "/config-dns/v2/data/edgehostnames")
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
 		log.Printf("Error creating request: %v", err)
 		return false
 	}
 	req.Header.Set("Accept", "application/json")
-	req = edgegrid.AddRequestHeader(conf, req)
+	conf.SignRequest(req)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {

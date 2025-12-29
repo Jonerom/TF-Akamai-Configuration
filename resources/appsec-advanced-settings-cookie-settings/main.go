@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -49,7 +48,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not resolve edgerc path: %v", err)
 	}
-	conf, err := edgegrid.Init(fullPath, *section)
+	conf, err := edgegrid.New(
+		edgegrid.WithFile(fullPath),
+		edgegrid.WithSection(*section),
+	)
 	if err != nil {
 		log.Fatalf("Failed to load .edgerc credentials from %s (section: %s): %v", fullPath, *section, err)
 	}
@@ -66,7 +68,7 @@ func main() {
 		UseAllSecureTraffic: *inputSecure,
 	}
 	fmt.Println("Step 2: Pushing Cookie Settings")
-	err := updateCookieSettings(conf, *configID, latestVersion, desiredState)
+	err = updateCookieSettings(conf, *configID, latestVersion, desiredState)
 	if err != nil {
 		log.Fatalf("Update failed: %v", err)
 	}
@@ -97,36 +99,29 @@ func main() {
 // Support Functions
 
 // verifyState fetches and compares the desired and actual state, returning true if successful
-func verifyState(conf edgegrid.Config, configID string, version int, desired CookieSettingsPayload) bool {
+func verifyState(conf *edgegrid.Config, configID string, version int, desired CookieSettingsPayload) bool {
 	actual, err := getCookieSettings(conf, configID, version)
 	if err != nil {
-		fmt.Printf("   -> Fetch failed: %v\n", err)
 		return false
 	}
-	if reflect.DeepEqual(desired, actual) {
-		fmt.Println("SUCCESS: Settings verified.")
-		return true
-	}
-	return false
+	return reflect.DeepEqual(desired, actual)
 }
 
 
 // getLatestVersion fetches the latest editable configuration version
-func getLatestVersion(conf edgegrid.Config, configID string) (int, error) {
+func getLatestVersion(conf *edgegrid.Config, configID string) (int, error) {
 	path := fmt.Sprintf("/appsec/v1/configs/%s/versions", configID)
 	respBody, err := sendRequest(conf, "GET", path, nil)
 	if err != nil {
 		return 0, err
 	}
-	var versionResp ConfigVersionResponse
-	if err := json.Unmarshal(respBody, &versionResp); err != nil {
-		return 0, fmt.Errorf("could not parse version response: %v", err)
-	}
-	return versionResp.LastCreatedVersion, nil
+	var vResp ConfigVersionResponse
+	json.Unmarshal(respBody, &vResp)
+	return vResp.LastCreatedVersion, nil
 }
 
 // updateCookieSettings performs the PUT request with the desired settings
-func updateCookieSettings(conf edgegrid.Config, configID string, version int, payload CookieSettingsPayload) error {
+func updateCookieSettings(conf *edgegrid.Config, configID string, version int, payload CookieSettingsPayload) error {
 	path := fmt.Sprintf("/appsec/v1/configs/%s/versions/%d/advanced-settings/cookie-settings", configID, version)
 	jsonBytes, _ := json.Marshal(payload)
 	_, err := sendRequest(conf, "PUT", path, jsonBytes)
@@ -134,56 +129,43 @@ func updateCookieSettings(conf edgegrid.Config, configID string, version int, pa
 }
 
 // getCookieSettings performs the GET request to read the current settings
-func getCookieSettings(conf edgegrid.Config, configID string, version int) (CookieSettingsPayload, error) {
+func getCookieSettings(conf *edgegrid.Config, configID string, version int) (CookieSettingsPayload, error) {
 	path := fmt.Sprintf("/appsec/v1/configs/%s/versions/%d/advanced-settings/cookie-settings", configID, version)
 	respBody, err := sendRequest(conf, "GET", path, nil)
 	if err != nil {
 		return CookieSettingsPayload{}, err
 	}
 	var state CookieSettingsPayload
-	if err := json.Unmarshal(respBody, &state); err != nil {
-		return CookieSettingsPayload{}, err
-	}
+	json.Unmarshal(respBody, &state)
 	return state, nil
 }
 
 // sendRequest is the generic request handler
-func sendRequest(conf edgegrid.Config, method, path string, body []byte) ([]byte, error) {
-	reqURL := url.URL{
-		Scheme: "https",
-		Host:   conf.Host,
-		Path:   path,
-	}
+func sendRequest(conf *edgegrid.Config, method, path string, body []byte) ([]byte, error) {
+	reqURL := fmt.Sprintf("https://%s%s", conf.Host, path)
 	var buf io.Reader
 	if body != nil {
 		buf = bytes.NewBuffer(body)
 	}
-	req, err := http.NewRequest(method, reqURL.String(), buf)
+	req, err := http.NewRequest(method, reqURL, buf)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req = edgegrid.AddRequestHeader(conf, req)
+	conf.SignRequest(req)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 	respBytes, _ := io.ReadAll(resp.Body)
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("API Error %d: %s | Body: %s", resp.StatusCode, resp.Status, string(respBytes))
-	}
-	return respBytes, nil
-}
+	return respBytes, nil}
 
 // expandPath handles the "~" character in file paths
 func expandPath(path string) (string, error) {
 	if strings.HasPrefix(path, "~/") {
-		dirname, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
+		dirname, _ := os.UserHomeDir()
 		return filepath.Join(dirname, path[2:]), nil
 	}
 	return path, nil

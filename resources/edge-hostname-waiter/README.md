@@ -74,8 +74,9 @@ Before running `terraform apply` for the first time (or after changing `main.go`
 
 1. Navigate to the path of the resource to build: `cd resources/edge-hostname-waiter`
 2. Initialize the go module `go mod init edge-hostname-waiter`
-3. Download Akamai dependencies `go get github.com/akamai/AkamaiOPEN-edgegrid-golang/v7`
-4. Build the Go binary `go build -o ehm_waiter.exe main.go`
+3. Add module requirements and sums `go mod tidy`
+4. Download Akamai dependencies `go get github.com/akamai/AkamaiOPEN-edgegrid-golang/v7/pkg/edgegrid`
+5. Build the Go binary `go build -o ehm_waiter.exe main.go`
 *(Note: On Linux/Mac, you may omit the .exe extension).*
 
 ---

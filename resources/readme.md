@@ -26,9 +26,10 @@ These modules were built to address specific gaps in the standard provider, such
 Steps to build the binary (linux)
 1. Navigate to the path of the resource to build: `cd <folder_name>`
 2. Initialize the go module `go mod init <folder_name>`
-3. Download Akamai dependencies `go get github.com/akamai/AkamaiOPEN-edgegrid-golang/v7`
-4. Build the Go binary `go build -o <resource_name> main.go`
-5. Update main.tf to reflect
+3. Add module requirements and sums `go mod tidy`
+4. Download Akamai dependencies `go get github.com/akamai/AkamaiOPEN-edgegrid-golang/v7/pkg/edgegrid`
+5. Build the Go binary `go build -o <resource_name> main.go`
+6. Update main.tf to reflect
 ```hcl
   provisioner "local-exec" {
     command = <<EOT
@@ -40,9 +41,10 @@ Steps to build the binary (linux)
 Steps to build the binary (windows)
 1. Navigate to the path of the resource to build: `cd resources/<folder_name>`
 2. Initialize the go module `go mod init <folder_name>`
-3. Download Akamai dependencies `go get github.com/akamai/AkamaiOPEN-edgegrid-golang/v7`
-4. Build the Go binary `go build -o <resource_name>.exe main.go`
-5. Update main.tf to reflect
+3. Add module requirements and sums `go mod tidy`
+4. Download Akamai dependencies `go get github.com/akamai/AkamaiOPEN-edgegrid-golang/v7/pkg/edgegrid`
+5. Build the Go binary `go build -o <resource_name>.exe main.go`
+6. Update main.tf to reflect
 ```hcl
   provisioner "local-exec" {
     command = <<EOT

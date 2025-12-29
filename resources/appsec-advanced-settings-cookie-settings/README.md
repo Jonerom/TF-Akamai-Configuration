@@ -70,10 +70,11 @@ This module currently defines no outputs in `outputs.tf`. The resource utilizes 
 ### Initial Setup
 Before running `terraform apply` for the first time (or after changing `main.go`), you must compile the tool:
 
-1. Navigate to the path of the resource to build: `cd modules/appsec_cookie_settings`
-2. Initialize the go module: `go mod init appsec_cookie_settings`
-3. Download Akamai dependencies: `go get github.com/akamai/AkamaiOPEN-edgegrid-golang/v7`
-4. Build the Go binary: `go build -o cookie-updater.exe main.go`
+1. Navigate to the path of the resource to build: `cd modules/appsec-advanced-settings-cookie-settings`
+2. Initialize the go module: `go mod init appsec-advanced-settings-cookie-settings`
+3. Add module requirements and sums `go mod tidy`
+4. Download Akamai dependencies: `go get github.com/akamai/AkamaiOPEN-edgegrid-golang/v7/pkg/edgegrid`
+5. Build the Go binary: `go build -o cookie-settings.exe main.go`
 *(Note: On Linux/Mac, you may omit the .exe extension).*
 
 ---
