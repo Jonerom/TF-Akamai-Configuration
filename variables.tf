@@ -1,7 +1,11 @@
 variable "akamai_map" {
   description = "The complete Akamai Map configuration to configure the CDN solution for a single zone"
   type = object({
-    akamai_group_name = string # Name of the Akamai Group assigned to the contract
+    ## Akamai Contract and Group Information  ##
+    # contract_id & group_id can be fetched via data sources if needed
+    akamai_contract_id = string # ID of the Akamai Contract to be used
+    akamai_group_id    = number # ID of the Akamai Group assigned to the contract
+    akamai_group_name  = string # Name of the Akamai Group assigned to the contract
     ##  DNS Configuration  ##
     # Configuration for each DNS Zone to be created
     zone_configuration = map(object({

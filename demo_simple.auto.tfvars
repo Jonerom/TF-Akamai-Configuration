@@ -1,7 +1,9 @@
 
 # Example of minimum set of variables to deploy an Akamai Edge Hostname with simple configuration.
 akamai_map = {
-  akamai_group_name = "My Organization-C-0N7RAC7"
+  akamai_contract_id = "C-0N7RAC7"
+  akamai_group_id    = 12345
+  akamai_group_name  = "My Organization-C-0N7RAC7"
   zone_configuration = {
     com = {
       zone_name = "example.com"
