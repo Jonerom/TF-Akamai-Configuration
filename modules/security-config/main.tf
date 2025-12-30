@@ -80,9 +80,11 @@ resource "akamai_appsec_advanced_settings_pragma_header" "pragma_header" {
 }
 
 ### Establish Response Cookie Secure Attribute (Configuration -> Advanced Settings -> Response Cookie)
-# No Terraform resource available at this time
+# No official Terraform resource available at this time
 # see https://techdocs.akamai.com/application-security/reference/get-advanced-settings-cookie-settings for API details
-# resource "akamai_appsec_advanced_settings_response_cookie_secure_attribute" "response_cookie_secure_attribute" {
-#   config_id         = akamai_appsec_configuration.security_config.config_id
-#   enable_secure_attr = var.security_config.response_cookie_secure_attribute_enable
-# }
+# Implemented Solution: boolean flag module
+module "appsec_cookies" {
+  source                 = "../../resources/appsec-advanced-settings-cookie-settings"
+  config_id              = akamai_appsec_configuration.security_config.config_id
+  use_all_secure_traffic = var.security_config.response_cookie_secure_attribute_enable
+}

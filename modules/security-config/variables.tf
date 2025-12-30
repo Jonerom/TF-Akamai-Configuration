@@ -85,6 +85,7 @@ variable "security_config" {
       conditional_operator   = optional(string)           # Condition operator for excluding certain requests from header removal, possible values: AND (ALL), OR (ANY)
       exclude_condition_list = optional(list(string), []) # List of conditions to exclude from header removal, find details at https://techdocs.akamai.com/application-security/reference/put-advanced-settings-pragma-header
     }), {})
+    response_cookie_secure_attribute_enable = optional(bool) # Enable Response Cookie Secure Attribute
   })
   default = {
     evasive_path_match_enable     = true

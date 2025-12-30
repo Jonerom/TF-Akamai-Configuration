@@ -39,9 +39,18 @@ resource "akamai_edge_hostname" "ehm" {
   }
 }
 
-resource "time_sleep" "ehm_wait" {
-  depends_on = [
-    akamai_edge_hostname.ehm
-  ]
-  create_duration = "20m"
+# Basic solution: Wait for 20 minutes to allow Akamai to provision the Edge Hostname
+# resource "time_sleep" "ehm_wait" {
+#   depends_on = [
+#     akamai_edge_hostname.ehm
+#   ]
+#   create_duration = "20m"
+# }
+
+# Implemented Solution: Poll the Edge Hostname resource until it is active
+module "wait_for_ehm" {
+  source          = "../../resources/edge-hostname-waiter"
+  edge_hostname   = akamai_edge_hostname.ehm.edge_hostname
+  timeout_minutes = try(var.timeout, null)
+  depends_on      = [akamai_edge_hostname.ehm]
 }

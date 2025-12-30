@@ -125,6 +125,7 @@ module "cert_txt_validation_simple" {
   target_list = ["${each.value.challenge_data.response_body}"]
 }
 
+# Takes few minutes for DNS to propagate, so wait before attempting validation
 resource "time_sleep" "cert_txt_wait" {
   depends_on = [
     module.cert_txt_validation_simple,

@@ -229,7 +229,7 @@ locals {
 }
 
 module "config_creation" {
-  count  = length(try(var.akamai_map.security_configuration, []))
+  count  = try(var.akamai_map.security_configuration, []) != [] ? 1 : 0
   source = "./modules/security-config"
   # contract = data.akamai_contract.my_contract.id
   # group =  data.akamai_group.my_group.id
