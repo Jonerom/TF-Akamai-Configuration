@@ -345,19 +345,34 @@ resource "akamai_appsec_reputation_profile_analysis" "reputation_analysis" {
 ### BOT MANAGEMENT
 ##################
 ### Enable and configure the Bot Management flags (Bot management) + (general bot management -> general settings) + (general bot management -> active detections)
-resource "akamai_botman_bot_management_settings" "bot_management_settings" {
-  config_id          = var.config_id
-  security_policy_id = akamai_appsec_security_policy.security_policy.security_policy_id
-  bot_management_settings = templatefile("${path.module}/json_templates/bot_management.json", {
-    enable_bot_management                   = var.security_policy.bot_management_settings.enable_bot_management,
-    add_akamai_bot_header                   = var.security_policy.bot_management_settings.add_akamai_bot_header,
-    third_party_proxy_service_in_use        = var.security_policy.bot_management_settings.third_party_proxy_service_in_use,
-    remove_bot_management_cookies           = var.security_policy.bot_management_settings.remove_bot_management_cookies,
-    enable_active_detections                = var.security_policy.bot_management_settings.enable_active_detections,
-    enable_browser_validation               = var.security_policy.bot_management_settings.enable_browser_validation,
-    include_transactional_endpoint_requests = var.security_policy.bot_management_settings.include_transactional_endpoint_requests
-    include_transactional_endpoint_status   = var.security_policy.bot_management_settings.include_transactional_endpoint_status
-  })
+# Akamai official Terraform resource not HCL compliant at this time
+# resource "akamai_botman_bot_management_settings" "bot_management_settings" {
+#   config_id          = var.config_id
+#   security_policy_id = akamai_appsec_security_policy.security_policy.security_policy_id
+#   bot_management_settings = templatefile("${path.module}/json_templates/bot_management.json", {
+#     enable_bot_management                   = var.security_policy.bot_management_settings.enable_bot_management,
+#     add_akamai_bot_header                   = var.security_policy.bot_management_settings.add_akamai_bot_header,
+#     third_party_proxy_service_in_use        = var.security_policy.bot_management_settings.third_party_proxy_service_in_use,
+#     remove_bot_management_cookies           = var.security_policy.bot_management_settings.remove_bot_management_cookies,
+#     enable_active_detections                = var.security_policy.bot_management_settings.enable_active_detections,
+#     enable_browser_validation               = var.security_policy.bot_management_settings.enable_browser_validation,
+#     include_transactional_endpoint_requests = var.security_policy.bot_management_settings.include_transactional_endpoint_requests,
+#     include_transactional_endpoint_status   = var.security_policy.bot_management_settings.include_transactional_endpoint_status
+#   })
+# }
+# Implemented Solution: HCL compliant module to handle Bot Management Settings
+module "bot_management_settings" {
+  source                                  = "../../resources/custom-botman-bot-management-settings"
+  config_id                               = var.config_id
+  security_policy_id                      = akamai_appsec_security_policy.security_policy.security_policy_id
+  enable_bot_management                   = var.security_policy.bot_management_settings.enable_bot_management
+  add_akamai_bot_header                   = try(var.security_policy.bot_management_settings.add_akamai_bot_header, null)
+  third_party_proxy_service_in_use        = var.security_policy.bot_management_settings.third_party_proxy_service_in_use
+  remove_bot_management_cookies           = var.security_policy.bot_management_settings.remove_bot_management_cookies
+  enable_active_detections                = var.security_policy.bot_management_settings.enable_active_detections
+  enable_browser_validation               = try(var.security_policy.bot_management_settings.enable_browser_validation, null)
+  include_transactional_endpoint_requests = try(var.security_policy.bot_management_settings.include_transactional_endpoint_requests, null)
+  include_transactional_endpoint_status   = try(var.security_policy.bot_management_settings.include_transactional_endpoint_status, null)
 }
 ### Configure Custom Bot Categories (bot management -> general bot management -> custom bot categories -> Category)
 resource "akamai_botman_custom_bot_category" "custom_bot_category" {

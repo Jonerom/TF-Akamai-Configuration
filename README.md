@@ -6,7 +6,7 @@ A full modular configuration of an Akamai deployment implemented as Terraform mo
 
 ## Overview
 
-This repository provides a cohesive set of Terraform modules to provision and operate Akamai components in a consistent, composable way. The modules target common delivery building blocks (Property Manager properties, Edge Hostnames, CP Codes, CPS certificate enrollments, and Edge DNS zones/records) and are designed to be wired together by a root configuration or higher-level orchestration.
+This repository provides a cohesive set of Terraform modules to provision and operate Akamai components in a consistent, composable way. The modules target common delivery building blocks (Property Manager properties, Edge Hostnames, CP Codes, CPS certificate enrollments, Edge DNS zones/records and Application Security configurations and policies) and are designed to be wired together by a root configuration or higher-level orchestration.
 
 The repository favors:
 - Clear module boundaries with typed inputs and predictable outputs
@@ -36,8 +36,14 @@ Usage examples, integration patterns, and end-to-end compositions live in the ex
   - dns-records-all/ — Flexible all-records interface for record types with rich attributes
   - edge-hostname/ — Edge Hostname creation and TLS/certificate binding
   - property/ — Property Manager configuration with versioning and activation controls
+  - security-activation/ — Application Security configuration versioning and activation controls
+  - security-config/ — Application Security configuration creation with a default settins template
+  - security-policy/ — Application Security policy creation with a default settins template
+- resources/
+  - appsec-advanced-settings-cookie-settings/ — Application Security configuration advanced settings cookie settings Terraform custom resource
+  - custom-botman-bot-management-settings/ — Bot Manager setting Terraform custom resource
+  - edge-hostname-waiter/ — Edge Hostname waiter polling Terraform custom resource
 - README.md — Overview of the repository
-- examples/ — Usage and integration compositions
 
 ---
 
@@ -47,6 +53,8 @@ Usage examples, integration patterns, and end-to-end compositions live in the ex
 - certificate-dv → edge-hostname: Enhanced TLS Edge Hostnames reference a CPS enrollment.
 - dns-zone → dns-records / dns-records-all: Records must be created in an existing zone.
 - property ↔ edge-hostname ↔ dns-records: Properties are bound to Edge Hostnames and surfaced via DNS.
+- security-config / security-policy → dns-records: Security configurations and policies must be configured with specific DNS targets.
+- security-config ↔ security-activation: Only activated security configurations are live.
 
 ---
 
@@ -65,3 +73,5 @@ Usage examples, integration patterns, and end-to-end compositions live in the ex
 - Property Manager API: https://techdocs.akamai.com/property-mgr/reference/api
 - CPS (Certificates) API: https://techdocs.akamai.com/cps/reference/api
 - Edge DNS API: https://techdocs.akamai.com/edge-dns/reference/api
+- Applicatino Security API: https://techdocs.akamai.com/application-security/reference/api
+- Bot Management API: https://techdocs.akamai.com/bot-manager/reference/api

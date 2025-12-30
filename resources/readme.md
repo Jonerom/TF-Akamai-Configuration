@@ -58,7 +58,7 @@ Steps to build the binary (windows)
 
 ```hcl
 module "custom_botman_bot_management_settings" {
-  source = "./resources/custom_botman_bot_management_settings"
+  source = "../../resources/custom-botman-bot-management-settings"
   config_id          = 12345
   security_policy_id = "PROD_WAF"
   enable_bot_management            = true
@@ -73,7 +73,7 @@ module "custom_botman_bot_management_settings" {
 
 ```hcl
 module "appsec_cookies" {
-  source = "./modules/appsec_cookie_settings"
+  source = "../../resources/appsec-advanced-settings-cookie-settings"
   config_id              = 12345
   use_all_secure_traffic = true
 }
@@ -84,7 +84,7 @@ module "appsec_cookies" {
 
 ```hcl
 module "wait_for_ehm" {
-  source = "./modules/edge_hostname_waiter"
+  source = "../../resources/edge-hostname-waiter.exe"
   edge_hostname = akamai_edge_hostname.ehm.edge_hostname
   depends_on = [akamai_edge_hostname.ehm]
 }
